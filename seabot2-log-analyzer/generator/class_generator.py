@@ -18,13 +18,13 @@ class Seabot2{{ class_name }}(Seabot2Data):
     def __init__(self, bag_path="", topic_name=""):
         Seabot2Data.__init__(self, bag_path, topic_name)
         {% for variable in table %}
-        self.{{ variable }} = np.empty([self.nb_elements], dtype='{{ table[variable] }}'){% endfor %}
+        self.{{ variable }} = np.empty([self.nb_elements], dtype='{{ table[variable][1] }}'){% endfor %}
 
         self.load_message()
 
     def process_message(self, msg):
         {% for variable in table %}
-        self.{{ variable }}[self.k] = msg.{{ variable }}{% endfor %}
+        self.{{ variable }}[self.k] = msg.{{ table[variable][0] }}{% endfor %}
         return"""
 
     interface = utilities.get_interface(package_name + "/msg/" + msg_name)
@@ -37,24 +37,30 @@ class Seabot2{{ class_name }}(Seabot2Data):
     if "header" in fields.keys():
         del fields["header"]
 
-    # Todo : to be removed
-    if "cell_volt" in fields.keys():
-        del fields["cell_volt"]
-    if "esc_current" in fields.keys():
-        del fields["esc_current"]
     if "linear" in fields.keys():
         del fields["linear"]
     if "angular" in fields.keys():
         del fields["angular"]
-    if "variance" in fields.keys():
-        del fields["variance"]
+
+    ## Rewrite fileds to take into acount tab and boolean
+    new_fields = {}
 
     for item in fields:
         if(fields[item]=="boolean"):
-            fields[item]="bool"
+            new_fields[item]=[item, "bool"]
+        elif("[" in fields[item]):
+            split_result = re.split(r'[\[\]]', fields[item])
+            variable_type = split_result[0]
+            variable_nb = int(split_result[1])
+            for i in range(variable_nb):
+                new_fields[item+str(i)]=[item+"["+str(i)+"]", variable_type]
+        else:
+            new_fields[item]=[item, fields[item]]
+    print(new_fields)
+
 
     tm = Template(template_msg)
-    msg = tm.render(class_name=interface_name, table=fields)
+    msg = tm.render(class_name=interface_name, table=new_fields)
 
     file_name = "../msg/seabot2_"+interface_name_lower + ".py"
 

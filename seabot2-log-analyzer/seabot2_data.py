@@ -25,6 +25,12 @@ class Seabot2Data(object):
         self.time = np.empty([self.nb_elements])
         self.k=0
         
+    def is_empty(self):
+        if(self.k==0):
+            return True
+        else:
+            return False
+
     def add_time(self, t):
         self.time[self.k] = t*1e-9-self.starting_time.timestamp()
         self.k=self.k+1

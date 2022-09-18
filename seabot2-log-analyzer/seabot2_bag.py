@@ -23,7 +23,7 @@ class Seabot2Bag():
 
 		# Driver
 		self.gps_fix = Seabot2GpsFix(bag_path, "/driver/fix")
-		self.internal_pressure = Seabot2Bme280Data(bag_path, "/driver/sensor_internal")
+		self.sensor_internal = Seabot2Bme280Data(bag_path, "/driver/sensor_internal")
 		self.sensor_external = Seabot2PressureSensorData(bag_path, "/driver/sensor_external")
 		self.piston_state = Seabot2PistonState(bag_path, "/driver/state")
 		self.power_state = Seabot2PowerState(bag_path, "/driver/power")
@@ -35,7 +35,7 @@ class Seabot2Bag():
 		self.waypoint = Seabot2Waypoint(bag_path, "/mission/waypoint")
 
 		# Observer
-		self.fusion_depth = Seabot2DepthPose(bag_path, "/observer/depth")
+		self.fusion_sensor_external = Seabot2DepthPose(bag_path, "/observer/depth")
 		self.fusion_sensor_internal = Seabot2Bme280Data(bag_path, "/observer/sensor_internal")
 		self.kalman = Seabot2KalmanState(bag_path, "/observer/kalman")
 		self.gnss_pose = Seabot2GnssPose(bag_path, "/observer/pose")
