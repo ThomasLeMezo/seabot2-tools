@@ -1,0 +1,65 @@
+#!/bin/python3
+
+import sqlite3
+from rosidl_runtime_py.utilities import get_message
+from rclpy.serialization import deserialize_message
+import rosbag2_py
+import numpy as np
+
+class Seabot2Data(object):
+    def __init__(self, bag_path="", topic_name=""):
+        self.bag_path = bag_path
+        self.topic_name=topic_name
+        
+        ## Determine sotrage and converter options
+        self.serialization_format='cdr'
+        self.storage_options = rosbag2_py.StorageOptions(uri=self.bag_path, storage_id='sqlite3')
+        self.converter_options = rosbag2_py.ConverterOptions(
+            input_serialization_format=self.serialization_format,
+            output_serialization_format=self.serialization_format)
+
+        ## Count number of messages
+        self.nb_elements = self.count_nb_message()
+        self.starting_time = self.get_starting_time()
+
+        self.time = np.empty([self.nb_elements])
+        self.k=0
+        
+    def add_time(self, t):
+        self.time[self.k] = t*1e-9-self.starting_time.timestamp()
+        self.k=self.k+1
+
+    def count_nb_message(self):
+        metadata = rosbag2_py.Info().read_metadata(self.storage_options.uri, self.storage_options.storage_id)
+        match = [item for item in metadata.topics_with_message_count if item.topic_metadata.name==self.topic_name]
+        if(len(match)>0):
+            return match[0].message_count
+        else:
+            return 0
+
+    def get_starting_time(self):
+        return rosbag2_py.Info().read_metadata(self.storage_options.uri, self.storage_options.storage_id).starting_time
+
+    def process_message(self, msg):
+        print("process_message not implemented")
+
+    def load_message(self):
+        ## Open the file
+        reader = rosbag2_py.SequentialReader()
+        reader.open(self.storage_options, self.converter_options)
+
+        ## Get a map of all topics
+        topic_types = reader.get_all_topics_and_types()
+        type_map = {topic_types[i].name: topic_types[i].type for i in range(len(topic_types))}
+
+        ## Filter to topic name
+        filter_topic = rosbag2_py.StorageFilter(topics=[self.topic_name])
+        reader.set_filter(filter_topic)
+
+        ## Get the messages
+        while reader.has_next():
+            (topic, data, t) = reader.read_next()
+            msg_type = get_message(type_map[topic])
+            msg = deserialize_message(data, msg_type)
+            self.process_message(msg)
+            self.add_time(t)
