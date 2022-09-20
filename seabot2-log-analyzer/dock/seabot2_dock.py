@@ -42,7 +42,7 @@ class Seabot2Dock(DockArea):
         arrow = pg.ArrowItem(pos=(t, x), angle=-45)
         p.addItem(arrow)
 
-    def get_pg_depth(self, depth_data, mission_data, data_name="depth", data_mission_name="set point"):
+    def get_pg_depth(self, depth_data, mission_data=None, data_name="depth", data_mission_name="set point"):
         pg_depth = pg.PlotWidget()
         self.set_plot_options(pg_depth)
         pg_depth.plot(depth_data.time, depth_data.depth[:-1], pen=(255,0,0), name=data_name, stepMode=True)

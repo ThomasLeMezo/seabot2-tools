@@ -14,6 +14,14 @@ class DockDepthControl(Seabot2Dock):
         Seabot2Dock.__init__(self, seabot2_bag)
         tabWidget.addTab(self, "Depth Control")
 
+        screw_thread_ =  1.e-3
+        tick_per_turn_ =  2048*4
+        piston_diameter_ =  0.045
+        tick_to_volume = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*np.pi;
+        self.tick_to_gram = tick_to_volume*1e6
+
+        print("Tick to volume = ", tick_to_volume)
+
         self.regulation_state = {
             0: "Idle",
             1: "Surface",
@@ -110,8 +118,14 @@ class DockDepthControl(Seabot2Dock):
             pg_depth = self.get_pg_depth(data, data_mission)
             dock_control.addWidget(pg_depth)
 
-            pg_control_set_point = self.plot_piston_position()
-            pg_control_set_point.plot(data_control.time, data_control.piston_set_point[:-1], pen=(0,255,0), name="set_point (control)", stepMode=True)
+            pg_control_set_point = pg.PlotWidget()
+            self.set_plot_options(pg_control_set_point)
+            pg_control_set_point.plot(data_piston.time, -data_piston.position[:-1]*self.tick_to_gram,pen=(255,0,0), name="position (in g)", stepMode=True)
+            pg_control_set_point.plot(data_piston.time, -data_piston.position_set_point[:-1]*self.tick_to_gram,pen=(0,0,255), name="set point (pic, every 100ms), (in g)", stepMode=True)
+            pg_control_set_point.setLabel('left', "Piston state position and set point", "g")
+            pg_control_set_point.showGrid(y=True)
+
+            pg_control_set_point.plot(data_control.time, -data_control.piston_set_point[:-1]*self.tick_to_gram, pen=(0,255,0), name="set_point (control) (in g)", stepMode=True)
             dock_control.addWidget(pg_control_set_point)
             pg_control_set_point.setXLink(pg_depth)
 

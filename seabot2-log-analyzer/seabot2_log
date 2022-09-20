@@ -1,0 +1,4 @@
+#!/bin/bash
+dir=`pwd`
+script_file=$HOME/seabot2/seabot2-tools/seabot2-log-analyzer/seabot2_log_analyzer.py
+python3 $script_file $dir/$1
