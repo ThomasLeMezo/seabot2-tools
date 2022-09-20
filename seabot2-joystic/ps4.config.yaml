@@ -1,0 +1,19 @@
+teleop_twist_joy_node:
+  ros__parameters:
+    axis_linear:
+      x: 3
+    scale_linear:
+      x: 0.7
+    scale_linear_turbo:
+      x: 1.5
+
+    axis_angular:
+      yaw: 2
+    scale_angular:
+      yaw: 0.4
+
+    enable_button: 9  # L2 shoulder button
+    enable_turbo_button: 10  # L1 shoulder button
+
+
+# ros2 launch teleop_twist_joy teleop-launch.py joy_config:="ps4" config_filepath:="/home/lemezoth/ps4.config.yaml"

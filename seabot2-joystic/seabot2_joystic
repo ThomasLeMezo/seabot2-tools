@@ -1,0 +1,9 @@
+#!/bin/zsh
+
+export ROS_DOMAIN_ID=$1
+echo "ROS_DOMAIN_ID = " $1
+echo "L1 slow - R1 fast"
+
+yaml_file=$HOME/seabot2/seabot2-tools/seabot2-joystic/ps4.config.yaml
+
+ros2 launch teleop_twist_joy teleop-launch.py joy_config:="ps4" config_filepath:=$yaml_file
