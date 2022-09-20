@@ -29,12 +29,13 @@ class DockDepthControl(Seabot2Dock):
         self.add_mode()
         self.add_control()
         self.add_control2()
+        self.add_piston_set_point()
         
 
     def plot_regulation_state(self, data_control):
         pg_regulation_state = pg.PlotWidget()
         self.set_plot_options(pg_regulation_state)
-        pg_regulation_state.plot(np.array(data_control.time), np.array(data_control.mode[:-1]), pen=(255,0,0), name="mode",stepMode=True)
+        pg_regulation_state.plot(data_control.time, data_control.mode[:-1], pen=(255,0,0), name="mode",stepMode=True)
         pg_regulation_state.setLabel('left', "mode")
 
         tab = np.array(data_control.mode)
@@ -50,8 +51,10 @@ class DockDepthControl(Seabot2Dock):
         data_mission = self.s2b.waypoint
 
         if(not data.is_empty()):
-            pg_depth = self.get_pg_depth(data, data_mission)
+            pg_depth = self.get_pg_depth(data, None, "depth (filter)")
+            pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0,255,0), name="depth (target)", stepMode=True)
             dock_depth.addWidget(pg_depth)
+            print(data_mission.time[0], data_mission.time[-1])
 
             pg_velocity = pg.PlotWidget()
             self.set_plot_options(pg_velocity)
@@ -145,7 +148,32 @@ class DockDepthControl(Seabot2Dock):
             pg_control_dy.setXLink(pg_depth)
 
 
-    
+    def add_piston_set_point(self):
+        dock_control_piston = Dock("Control piston")
+        self.addDock(dock_control_piston, position='below')
+        # data = self.s2b.kalman
+        data = self.s2b.fusion_sensor_external
+        data_control = self.s2b.depth_control_debug
+        data_mission = self.s2b.waypoint
+        data_piston = self.s2b.piston_state
+
+        if(not data.is_empty()):
+            pg_depth = self.get_pg_depth(data, data_mission)
+            dock_control_piston.addWidget(pg_depth)
+
+            pg_control_u = pg.PlotWidget()
+            self.set_plot_options(pg_control_u)
+            pg_control_u.plot(data_control.time, data_control.u[:-1], pen=(0,255,0), name="u", stepMode=True)
+            dock_control_piston.addWidget(pg_control_u)
+            pg_control_u.setXLink(pg_depth)
+
+            pg_control_piston = pg.PlotWidget()
+            self.set_plot_options(pg_control_piston)
+            pg_control_piston.plot(data_piston.time, data_piston.motor_speed_set_point[:-1]-2000.0, pen=(0,255,0), name="motor set point", stepMode=True)
+            pg_control_piston.plot(data_piston.time, data_piston.motor_speed[:-1]-2000.0, pen=(255,0,0), name="motor speed", stepMode=True)
+            dock_control_piston.addWidget(pg_control_piston)
+            pg_control_piston.setXLink(pg_depth)
+
     
 
 

@@ -16,7 +16,6 @@ class Seabot2Waypoint(Seabot2Data):
         self.approach_velocity = np.empty([self.nb_elements], dtype='float')
         self.mission_enable = np.empty([self.nb_elements], dtype='bool')
         self.enable_thrusters = np.empty([self.nb_elements], dtype='bool')
-        self.waypoint_number = np.empty([self.nb_elements], dtype='uint16')
         self.waypoint_id = np.empty([self.nb_elements], dtype='uint16')
         self.waypoint_length = np.empty([self.nb_elements], dtype='uint16')
         self.time_to_next_waypoint = np.empty([self.nb_elements], dtype='double')
@@ -33,7 +32,6 @@ class Seabot2Waypoint(Seabot2Data):
         self.approach_velocity[self.k] = msg.approach_velocity
         self.mission_enable[self.k] = msg.mission_enable
         self.enable_thrusters[self.k] = msg.enable_thrusters
-        self.waypoint_number[self.k] = msg.waypoint_number
         self.waypoint_id[self.k] = msg.waypoint_id
         self.waypoint_length[self.k] = msg.waypoint_length
         self.time_to_next_waypoint[self.k] = msg.time_to_next_waypoint

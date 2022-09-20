@@ -64,8 +64,13 @@ class Seabot2Data(object):
 
         ## Get the messages
         while reader.has_next():
-            (topic, data, t) = reader.read_next()
-            msg_type = get_message(type_map[topic])
-            msg = deserialize_message(data, msg_type)
-            self.process_message(msg)
-            self.add_time(t)
+            try:
+                (topic, data, t) = reader.read_next()
+                msg_type = get_message(type_map[topic])
+            
+                msg = deserialize_message(data, msg_type)
+                self.process_message(msg)
+                self.add_time(t)
+            except Exception as e:
+                print("Oops!  deserialization error ", e)
+                break

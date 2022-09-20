@@ -17,6 +17,7 @@ class DockData(Seabot2Dock):
         self.add_external_sensor()
         self.add_piston()
         self.add_piston_power()
+        self.add_battery()
 
     def add_internal_sensor(self):
         dock_internal_sensor = Dock("Internal Sensor")
@@ -127,3 +128,25 @@ class DockData(Seabot2Dock):
 
             pg_piston_batt_voltage.setXLink(pg_piston)
             pg_piston_current.setXLink(pg_piston)
+
+    def add_battery(self):
+        dock_battery = Dock("Batteries")
+        self.addDock(dock_battery, position='below')
+
+        data = self.s2b.power_state
+        if(not data.is_empty()):
+            pg_voltage = pg.PlotWidget()
+            self.set_plot_options(pg_voltage)
+            pg_voltage.plot(data.time, data.battery_volt[:-1], pen=(0,255,0), name="Voltage", stepMode=True)
+            pg_voltage.setLabel('left', "V")
+            dock_battery.addWidget(pg_voltage)
+
+            pg_cells = pg.PlotWidget()
+            self.set_plot_options(pg_cells)
+            pg_cells.plot(data.time, data.cell_volt0[:-1], pen=(255,0,0), name="Cell 1", stepMode=True)
+            pg_cells.plot(data.time, data.cell_volt1[:-1], pen=(0,255,0), name="Cell 2", stepMode=True)
+            pg_cells.plot(data.time, data.cell_volt2[:-1], pen=(0,0,255), name="Cell 3", stepMode=True)
+            pg_cells.plot(data.time, data.cell_volt3[:-1], pen=(255,255,0), name="Cell 4", stepMode=True)
+            pg_cells.setLabel('left', "V")
+            dock_battery.addWidget(pg_cells)
+            pg_cells.setXLink(pg_voltage)

@@ -30,7 +30,7 @@ class DockKalman(Seabot2Dock):
 
             pg_velocity = pg.PlotWidget()
             self.set_plot_options(pg_velocity)
-            pg_velocity.plot(data.time, data_fusion.velocity[:-1], pen=(0,255,0), name="velocity [Filter]", stepMode=True)
+            pg_velocity.plot(data_fusion.time, data_fusion.velocity[:-1], pen=(0,255,0), name="velocity [Filter]", stepMode=True)
             pg_velocity.plot(data.time, data.velocity[:-1], pen=(255,0,0), name="velocity [Kalman]", stepMode=True)
             
             pg_velocity.setLabel('left', "Velocity", "m/s")
@@ -64,7 +64,7 @@ class DockKalman(Seabot2Dock):
         data_fusion = self.s2b.fusion_sensor_external
 
         if(not data.is_empty()):
-            pg_depth = self.get_pg_depth(data, data_fusion)
+            pg_depth = self.get_pg_depth(data, data_fusion, "depth (kalman)", "depth (filter)")
             dock_offset.addWidget(pg_depth)
 
             pg_chi = pg.PlotWidget()
