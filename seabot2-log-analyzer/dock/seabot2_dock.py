@@ -11,6 +11,11 @@ class Seabot2Dock(DockArea):
     def __init__(self, seabot2_bag):
         DockArea.__init__(self)
         self.s2b = seabot2_bag
+        screw_thread =  1.e-3
+        self.tick_per_turn =  2048*4
+        piston_diameter =  0.045
+        self.tick_to_volume = (screw_thread/self.tick_per_turn)*pow(piston_diameter/2.0, 2)*np.pi;
+        self.tick_to_gram = self.tick_to_volume*1e6
 
     def set_plot_options(self, pg):
         pg.addLegend()

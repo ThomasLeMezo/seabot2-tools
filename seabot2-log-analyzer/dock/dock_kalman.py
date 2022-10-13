@@ -7,6 +7,7 @@ import pyqtgraph.console
 from pyqtgraph.dockarea import *
 from .seabot2_dock import Seabot2Dock
 import numpy as np
+from scipy import signal, interpolate
 
 class DockKalman(Seabot2Dock):
     def __init__(self, seabot2_bag, tabWidget):
@@ -17,6 +18,8 @@ class DockKalman(Seabot2Dock):
         self.add_offset()
         self.add_coeff()
         self.add_variance()
+        self.add_offset_total()
+        self.add_compressibility()
 
     def add_depth(self):
         dock_kalman_state = Dock("State")
@@ -69,15 +72,15 @@ class DockKalman(Seabot2Dock):
 
             pg_chi = pg.PlotWidget()
             self.set_plot_options(pg_chi)
-            pg_chi.plot(data.time, data.chi[:-1], pen=(0,255,0), name="chi", stepMode=True)
-            pg_chi.setLabel('left', "chi", "")
+            pg_chi.plot(data.time, data.chi[:-1]*1e6, pen=(0,255,0), name="chi", stepMode=True)
+            pg_chi.setLabel('left', "chi", "g/m")
             dock_offset.addWidget(pg_chi)
             pg_chi.setXLink(pg_depth)
 
             pg_chi2 = pg.PlotWidget()
             self.set_plot_options(pg_chi2)
-            pg_chi2.plot(data.time, data.chi2[:-1], pen=(0,255,0), name="chi2", stepMode=True)
-            pg_chi2.setLabel('left', "chi2", "")
+            pg_chi2.plot(data.time, data.chi2[:-1]*1e6, pen=(0,255,0), name="chi2", stepMode=True)
+            pg_chi2.setLabel('left', "chi2", "g/m2")
             dock_offset.addWidget(pg_chi2)
             pg_chi2.setXLink(pg_depth)
 
@@ -114,3 +117,82 @@ class DockKalman(Seabot2Dock):
             pg_variance_offset.setLabel('left', "offset", "")
             dock_offset.addWidget(pg_variance_offset)
             pg_variance_offset.setXLink(pg_variance_velocity)
+
+    def add_offset_total(self):
+        dock_offset_total = Dock("Offset total")
+        self.addDock(dock_offset_total, position='below')
+        data = self.s2b.kalman
+        data_fusion = self.s2b.fusion_sensor_external
+        data_mission = self.s2b.waypoint
+
+        if(not data.is_empty()):
+            pg_depth = self.get_pg_depth(data, data_mission, "depth (kalman)", "set point")
+            dock_offset_total.addWidget(pg_depth)
+
+            pg_offset_total = pg.PlotWidget()
+            self.set_plot_options(pg_offset_total)
+
+            chi = data.chi
+            chi2 = data.chi2
+            offset = data.offset
+            z = data.depth
+            offset_total_gram = (data.offset+chi*z+chi2*np.square(z))*1e6
+
+            pg_offset_total.plot(data.time, offset_total_gram[0:-1], pen=(0,255,0), name="offset total", stepMode=True)
+            pg_offset_total.setLabel('left', "offset", "g")
+            dock_offset_total.addWidget(pg_offset_total)
+            pg_offset_total.setXLink(pg_depth)
+
+    def add_compressibility(self):
+        dock_compressibility = Dock("Compressibility")
+        self.addDock(dock_compressibility, position='below')
+        data_kalman = self.s2b.kalman
+        data_fusion_internal = self.s2b.fusion_sensor_internal
+        data_fusion_external = self.s2b.fusion_sensor_external
+        data_mission = self.s2b.waypoint
+        data_piston = self.s2b.piston_state
+
+        piston_volume = -data_piston.position*self.tick_to_volume
+        pression = data_fusion_internal.pressure * 100.0
+        temperature = data_fusion_internal.temperature + 273.15
+        depth = data_fusion_external.depth
+
+        f_piston_volume = interpolate.interp1d(data_piston.time, piston_volume, bounds_error=False, kind="zero")
+        f_depth = interpolate.interp1d(data_fusion_external.time, depth, bounds_error=False, kind="zero")
+
+        piston_volume_i = f_piston_volume(data_fusion_internal.time)
+        depth_i = f_depth(data_fusion_internal.time)
+
+        # Compute the parameter V and n for depth where we assume the effect of compressibility negligeable
+        condition = depth_i<2.0
+        pression_c = np.compress(condition, pression)
+        temperature_c = np.compress(condition, temperature)
+        piston_volume_c = np.compress(condition, piston_volume_i)
+
+        # dV = n*(RT/P) - V avec n et V cst
+        # y = n*x+(-V)
+        R = 8.314463 # constante gaz parfait
+        y = piston_volume_c
+        x = R*temperature_c/pression_c
+
+        [n, V_neg] = np.polyfit(x, y, 1)
+        V = -V_neg
+        print("n = ", n, " V=", V*1e3)
+
+        # V = nRT/P-dV
+        # V = nRT/P-dV
+        V_m = (n*R*temperature)/pression-piston_volume_i-V
+
+        chi_water = 4.27e-10
+        V_float = 12.4e-3
+        water_pressure_i = depth_i*1e4
+        V_water_loss = -chi_water*water_pressure_i*V_float
+
+        pg_volume = pg.PlotWidget()
+        self.set_plot_options(pg_volume)
+        pg_volume.plot((V_m-V_water_loss)*1e6, depth_i[0:-1], pen=(0,255,0), name="", stepMode=True)
+        pg_volume.setLabel('left', "depth", "m")
+        pg_volume.setLabel('bottom', "anomaly of volume compare to water (compressibility)", "g")
+
+        pg_volume.getViewBox().invertY(True)
+        dock_compressibility.addWidget(pg_volume)

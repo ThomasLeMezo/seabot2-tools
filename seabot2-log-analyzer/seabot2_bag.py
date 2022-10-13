@@ -14,6 +14,7 @@ from msg.seabot2_engine import Seabot2Engine
 from msg.seabot2_bme280_data import Seabot2Bme280Data
 from msg.seabot2_depth_control_debug import Seabot2DepthControlDebug
 from msg.seabot2_twist import Seabot2Twist
+from msg.seabot2_temperature_sensor_data import Seabot2TemperatureSensorData
 
 class Seabot2Bag():
 	def __init__(self, bag_path=""):
@@ -43,6 +44,8 @@ class Seabot2Bag():
 		self.fusion_power = Seabot2PowerState(bag_path, "/observer/power")
 
 		self.safety_log = Seabot2SafetyLog(bag_path, "/safety/log")
+
+		self.temperature = Seabot2TemperatureSensorData(bag_path, "/driver/temperature")
 
 		
 		

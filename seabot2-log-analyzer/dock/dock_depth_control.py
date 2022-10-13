@@ -14,14 +14,6 @@ class DockDepthControl(Seabot2Dock):
         Seabot2Dock.__init__(self, seabot2_bag)
         tabWidget.addTab(self, "Depth Control")
 
-        screw_thread_ =  1.e-3
-        tick_per_turn_ =  2048*4
-        piston_diameter_ =  0.045
-        tick_to_volume = (screw_thread_/tick_per_turn_)*pow(piston_diameter_/2.0, 2)*np.pi;
-        self.tick_to_gram = tick_to_volume*1e6
-
-        print("Tick to volume = ", tick_to_volume)
-
         self.regulation_state = {
             0: "Idle",
             1: "Surface",
@@ -58,11 +50,10 @@ class DockDepthControl(Seabot2Dock):
         data = self.s2b.fusion_sensor_external
         data_mission = self.s2b.waypoint
 
-        if(not data.is_empty()):
+        if(not data.is_empty() and not data_mission.is_empty()):
             pg_depth = self.get_pg_depth(data, None, "depth (filter)")
             pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0,255,0), name="depth (target)", stepMode=True)
             dock_depth.addWidget(pg_depth)
-            print(data_mission.time[0], data_mission.time[-1])
 
             pg_velocity = pg.PlotWidget()
             self.set_plot_options(pg_velocity)
@@ -187,7 +178,4 @@ class DockDepthControl(Seabot2Dock):
             pg_control_piston.plot(data_piston.time, data_piston.motor_speed[:-1]-2000.0, pen=(255,0,0), name="motor speed", stepMode=True)
             dock_control_piston.addWidget(pg_control_piston)
             pg_control_piston.setXLink(pg_depth)
-
-    
-
 
