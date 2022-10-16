@@ -22,7 +22,6 @@ class DockData(Seabot2Dock):
         self.add_battery()
         self.add_power_state()
         self.add_temperature()
-        self.add_temperature_depth()
 
     def add_internal_sensor(self):
         dock_internal_sensor = Dock("Internal Sensor")
@@ -198,22 +197,4 @@ class DockData(Seabot2Dock):
             pg_temperature.setLabel('left', "temperature", "°C")
             dock_temperature.addWidget(pg_temperature)
 
-    def add_temperature_depth(self):
-        dock_temperature_depth = Dock("Temperature/Depth")
-        self.addDock(dock_temperature_depth, position='below')
-
-        data_temp = self.s2b.temperature
-        if(not data_temp.is_empty()):
-            
-            data_depth = self.s2b.fusion_sensor_external
-
-            f_temp = interpolate.interp1d(data_temp.time, data_temp.temperature, bounds_error=False, kind="zero")
-            temp_interp = f_temp(data_depth.time)
-            
-            pg_temperature_temperature = pg.PlotWidget()
-            self.set_plot_options(pg_temperature_temperature)
-            pg_temperature_temperature.plot(temp_interp, data_depth.depth[:-1], pen=(0,255,0), name="Temperature", stepMode=True)
-            pg_temperature_temperature.setLabel('bottom', "Temperature", "°C")
-            pg_temperature_temperature.setLabel('left', "Depth", "m")
-            pg_temperature_temperature.getViewBox().invertY(True)
-            dock_temperature_depth.addWidget(pg_temperature_temperature)
+    

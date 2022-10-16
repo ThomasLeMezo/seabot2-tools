@@ -16,6 +16,7 @@ class Seabot2KalmanState(Seabot2Data):
         self.chi2 = np.empty([self.nb_elements], dtype='double')
         self.cz = np.empty([self.nb_elements], dtype='double')
         self.offset_total = np.empty([self.nb_elements], dtype='double')
+        self.volume_air = np.empty([self.nb_elements], dtype='double')
         self.variance0 = np.empty([self.nb_elements], dtype='double')
         self.variance1 = np.empty([self.nb_elements], dtype='double')
         self.variance2 = np.empty([self.nb_elements], dtype='double')
@@ -35,6 +36,7 @@ class Seabot2KalmanState(Seabot2Data):
         self.chi2[self.k] = msg.chi2
         self.cz[self.k] = msg.cz
         self.offset_total[self.k] = msg.offset_total
+        self.volume_air[self.k] = msg.volume_air
         self.variance0[self.k] = msg.variance[0]
         self.variance1[self.k] = msg.variance[1]
         self.variance2[self.k] = msg.variance[2]

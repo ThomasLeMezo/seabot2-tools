@@ -53,9 +53,9 @@ class DockKalman(Seabot2Dock):
 
             pg_velocity = pg.PlotWidget()
             self.set_plot_options(pg_velocity)
-            pg_velocity.plot(data.time, data.offset[:-1], pen=(0,255,0), name="offset", stepMode=True)
+            pg_velocity.plot(data.time, data.offset[:-1]*1e6, pen=(0,255,0), name="offset", stepMode=True)
             
-            pg_velocity.setLabel('left', "offset", "m3")
+            pg_velocity.setLabel('left', "offset", "g")
             dock_offset.addWidget(pg_velocity)
 
             pg_velocity.setXLink(pg_depth)
@@ -90,6 +90,13 @@ class DockKalman(Seabot2Dock):
             pg_cz.setLabel('left', "cz", "")
             dock_offset.addWidget(pg_cz)
             pg_cz.setXLink(pg_depth)
+
+            pg_volume_air = pg.PlotWidget()
+            self.set_plot_options(pg_volume_air)
+            pg_volume_air.plot(data.time, data.volume_air[:-1], pen=(0,255,0), name="volume_air", stepMode=True)
+            pg_volume_air.setLabel('left', "volume air", "")
+            dock_offset.addWidget(pg_volume_air)
+            pg_volume_air.setXLink(pg_depth)
 
     def add_variance(self):
         dock_offset = Dock("Variance")
@@ -136,7 +143,8 @@ class DockKalman(Seabot2Dock):
             chi2 = data.chi2
             offset = data.offset
             z = data.depth
-            offset_total_gram = (data.offset+chi*z+chi2*np.square(z))*1e6
+            volume_air = data.volume_air
+            offset_total_gram = (data.offset+chi*z+chi2*np.square(z)+volume_air/(z+1.0))*1e6
 
             pg_offset_total.plot(data.time, offset_total_gram[0:-1], pen=(0,255,0), name="offset total", stepMode=True)
             pg_offset_total.setLabel('left', "offset", "g")
