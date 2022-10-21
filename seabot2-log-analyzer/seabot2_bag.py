@@ -15,6 +15,7 @@ from msg.seabot2_bme280_data import Seabot2Bme280Data
 from msg.seabot2_depth_control_debug import Seabot2DepthControlDebug
 from msg.seabot2_twist import Seabot2Twist
 from msg.seabot2_temperature_sensor_data import Seabot2TemperatureSensorData
+from msg.seabot2_rosout import Seabot2RosOut
 
 class Seabot2Bag():
 	def __init__(self, bag_path=""):
@@ -24,9 +25,14 @@ class Seabot2Bag():
 
 		# Driver
 		self.gps_fix = Seabot2GpsFix(bag_path, "/driver/fix")
-		self.sensor_internal = Seabot2Bme280Data(bag_path, "/driver/sensor_internal")
-		self.sensor_external = Seabot2PressureSensorData(bag_path, "/driver/sensor_external")
-		self.piston_state = Seabot2PistonState(bag_path, "/driver/state")
+		# self.sensor_internal = Seabot2Bme280Data(bag_path, "/driver/sensor_internal")
+		# self.sensor_external = Seabot2PressureSensorData(bag_path, "/driver/sensor_external")
+		# self.piston_state = Seabot2PistonState(bag_path, "/driver/state")
+
+		self.sensor_internal = Seabot2Bme280Data(bag_path, "/driver/pressure_internal")
+		self.sensor_external = Seabot2PressureSensorData(bag_path, "/driver/pressure_external")
+		self.piston_state = Seabot2PistonState(bag_path, "/driver/piston")
+
 		self.power_state = Seabot2PowerState(bag_path, "/driver/power")
 		self.thruster_velocity = Seabot2Velocity(bag_path, "/driver/engine")
 		self.thruster_engine_cmd = Seabot2Engine(bag_path, "/driver/cmd_engine")
@@ -37,7 +43,7 @@ class Seabot2Bag():
 
 		# Observer
 		self.fusion_sensor_external = Seabot2DepthPose(bag_path, "/observer/depth")
-		self.fusion_sensor_internal = Seabot2Bme280Data(bag_path, "/observer/sensor_internal")
+		self.fusion_sensor_internal = Seabot2Bme280Data(bag_path, "/observer/pressure_internal")
 		self.kalman = Seabot2KalmanState(bag_path, "/observer/kalman")
 		self.gnss_pose = Seabot2GnssPose(bag_path, "/observer/pose")
 		self.gnss_pose_mean = Seabot2GnssPose(bag_path, "/observer/pose_mean")
@@ -46,6 +52,9 @@ class Seabot2Bag():
 		self.safety_log = Seabot2SafetyLog(bag_path, "/safety/log")
 
 		self.temperature = Seabot2TemperatureSensorData(bag_path, "/driver/temperature")
+
+		# Info
+		self.rosout = Seabot2RosOut(bag_path, "/rosout")
 
 		
 		

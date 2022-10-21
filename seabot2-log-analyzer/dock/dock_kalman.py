@@ -16,10 +16,11 @@ class DockKalman(Seabot2Dock):
 
         self.add_depth()
         self.add_offset()
+        self.add_coeff2()
         self.add_coeff()
         self.add_variance()
         self.add_offset_total()
-        self.add_compressibility()
+        #self.add_compressibility()
 
     def add_depth(self):
         dock_kalman_state = Dock("State")
@@ -28,7 +29,7 @@ class DockKalman(Seabot2Dock):
         data_fusion = self.s2b.fusion_sensor_external
 
         if(not data.is_empty()):
-            pg_depth = self.get_pg_depth(data, data_fusion)
+            pg_depth = self.get_pg_depth(data, data_fusion, data_name="kalman", data_mission_name="fusion")
             dock_kalman_state.addWidget(pg_depth)
 
             pg_velocity = pg.PlotWidget()
@@ -64,39 +65,45 @@ class DockKalman(Seabot2Dock):
         dock_offset = Dock("Coefficient")
         self.addDock(dock_offset, position='below')
         data = self.s2b.kalman
-        data_fusion = self.s2b.fusion_sensor_external
+
+        pg_offset = pg.PlotWidget()
+        self.set_plot_options(pg_offset)
+        pg_offset.plot(data.time, data.offset[:-1]*1e6, pen=(0,255,0), name="offset", stepMode=True)
+        pg_offset.setLabel('left', "offset", "g")
+        dock_offset.addWidget(pg_offset)
+
+        pg_volume_air = pg.PlotWidget()
+        self.set_plot_options(pg_volume_air)
+        pg_volume_air.plot(data.time, data.volume_air[:-1]*1e6, pen=(0,255,0), name="volume_air", stepMode=True)
+        pg_volume_air.setLabel('left', "volume air", "g")
+        dock_offset.addWidget(pg_volume_air)
+        pg_volume_air.setXLink(pg_offset)
+
+    def add_coeff2(self):
+        dock_offset = Dock("Coefficient 2")
+        self.addDock(dock_offset, position='below')
+        data = self.s2b.kalman
 
         if(not data.is_empty()):
-            pg_depth = self.get_pg_depth(data, data_fusion, "depth (kalman)", "depth (filter)")
-            dock_offset.addWidget(pg_depth)
-
             pg_chi = pg.PlotWidget()
             self.set_plot_options(pg_chi)
             pg_chi.plot(data.time, data.chi[:-1]*1e6, pen=(0,255,0), name="chi", stepMode=True)
             pg_chi.setLabel('left', "chi", "g/m")
             dock_offset.addWidget(pg_chi)
-            pg_chi.setXLink(pg_depth)
 
             pg_chi2 = pg.PlotWidget()
             self.set_plot_options(pg_chi2)
             pg_chi2.plot(data.time, data.chi2[:-1]*1e6, pen=(0,255,0), name="chi2", stepMode=True)
             pg_chi2.setLabel('left', "chi2", "g/m2")
             dock_offset.addWidget(pg_chi2)
-            pg_chi2.setXLink(pg_depth)
+            pg_chi2.setXLink(pg_chi)
 
             pg_cz = pg.PlotWidget()
             self.set_plot_options(pg_cz)
             pg_cz.plot(data.time, data.cz[:-1], pen=(0,255,0), name="cz", stepMode=True)
             pg_cz.setLabel('left', "cz", "")
             dock_offset.addWidget(pg_cz)
-            pg_cz.setXLink(pg_depth)
-
-            pg_volume_air = pg.PlotWidget()
-            self.set_plot_options(pg_volume_air)
-            pg_volume_air.plot(data.time, data.volume_air[:-1], pen=(0,255,0), name="volume_air", stepMode=True)
-            pg_volume_air.setLabel('left', "volume air", "")
-            dock_offset.addWidget(pg_volume_air)
-            pg_volume_air.setXLink(pg_depth)
+            pg_cz.setXLink(pg_chi)
 
     def add_variance(self):
         dock_offset = Dock("Variance")
@@ -144,7 +151,7 @@ class DockKalman(Seabot2Dock):
             offset = data.offset
             z = data.depth
             volume_air = data.volume_air
-            offset_total_gram = (data.offset+chi*z+chi2*np.square(z)+volume_air/(z+1.0))*1e6
+            offset_total_gram = (data.offset-chi*z-chi2*np.square(z)+volume_air/(z+1.0))*1e6
 
             pg_offset_total.plot(data.time, offset_total_gram[0:-1], pen=(0,255,0), name="offset total", stepMode=True)
             pg_offset_total.setLabel('left', "offset", "g")
