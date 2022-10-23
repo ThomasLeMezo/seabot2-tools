@@ -89,13 +89,44 @@ class DockAnalysis(Seabot2Dock):
             self.replay_volume_air = pg_volume_air.plot(self.sk.msg_time[:-1], self.sk.msg_volume_air[:-2]*1e6, pen=(0,0,255), name="volume_air [replay]", stepMode=True)
             pg_volume_air.setLabel('left', "volume air", "g")
             dock_kalman_offset.addWidget(pg_volume_air)
-            # pg_volume_air.setXLink(pg_offset)
+            
+
+            pg_offset_total = pg.PlotWidget()
+            self.set_plot_options(pg_offset_total)
+
+            chi = data.chi
+            chi2 = data.chi2
+            offset = data.offset
+            z = data.depth
+            volume_air = data.volume_air
+            offset_total_gram = (offset-chi*z-chi2*np.square(z)+volume_air/(z+1.0))*1e6
+
+            r_chi = self.sk.msg_chi[:-2]
+            r_chi2 = self.sk.msg_chi2[:-2]
+            r_z = self.sk.msg_depth[:-2]
+            r_offset = self.sk.msg_offset[:-2]
+            r_volume_air = self.sk.msg_volume_air[:-2]
+            r_offset_total_gram = (r_offset-r_chi*r_z-r_chi2*np.square(r_z)+r_volume_air/(r_z+1.0))*1e6
+
+            pg_offset_total.plot(data.time, offset_total_gram[0:-1], pen=(0,255,0), name="offset total", stepMode=True)
+            self.replay_offset_total = pg_offset_total.plot(self.sk.msg_time[:-1], r_offset_total_gram, pen=(0,0,255), name="offset total [replay]", stepMode=True)
+            pg_offset_total.setLabel('left', "offset", "g")
+            dock_kalman_offset.addWidget(pg_offset_total)
+            pg_offset_total.setXLink(pg_volume_air)
 
     def update_replay_kalman_depth(self):
         self.replay_depth.setData(self.sk.msg_time[:-1], self.sk.msg_depth[:-2])
         self.replay_velocity.setData(self.sk.msg_time[:-1], self.sk.msg_velocity[:-2])
         self.replay_offset.setData(self.sk.msg_time[:-1], self.sk.msg_offset[:-2]*1e6)
         self.replay_volume_air.setData(self.sk.msg_time[:-1], self.sk.msg_volume_air[:-2]*1e6)
+
+        r_chi = self.sk.msg_chi[:-2]
+        r_chi2 = self.sk.msg_chi2[:-2]
+        r_z = self.sk.msg_depth[:-2]
+        r_offset = self.sk.msg_offset[:-2]
+        r_volume_air = self.sk.msg_volume_air[:-2]
+        r_offset_total_gram = (r_offset-r_chi*r_z-r_chi2*np.square(r_z)+r_volume_air/(r_z+1.0))*1e6
+        self.replay_offset_total.setData(self.sk.msg_time[:-1], r_offset_total_gram)
 
 
     def call_compute_kalman(self):
