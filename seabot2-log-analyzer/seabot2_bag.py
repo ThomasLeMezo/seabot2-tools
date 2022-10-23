@@ -16,6 +16,8 @@ from msg.seabot2_depth_control_debug import Seabot2DepthControlDebug
 from msg.seabot2_twist import Seabot2Twist
 from msg.seabot2_temperature_sensor_data import Seabot2TemperatureSensorData
 from msg.seabot2_rosout import Seabot2RosOut
+from msg.seabot2_density import Seabot2Density
+from msg.seabot2_log_parameter import Seabot2LogParameter
 
 class Seabot2Bag():
 	def __init__(self, bag_path=""):
@@ -48,6 +50,7 @@ class Seabot2Bag():
 		self.gnss_pose = Seabot2GnssPose(bag_path, "/observer/pose")
 		self.gnss_pose_mean = Seabot2GnssPose(bag_path, "/observer/pose_mean")
 		self.fusion_power = Seabot2PowerState(bag_path, "/observer/power")
+		self.density = Seabot2Density(bag_path, "/observer/density")
 
 		self.safety_log = Seabot2SafetyLog(bag_path, "/safety/log")
 
@@ -55,6 +58,7 @@ class Seabot2Bag():
 
 		# Info
 		self.rosout = Seabot2RosOut(bag_path, "/rosout")
+		self.log_parameter = Seabot2LogParameter(bag_path, "/observer/parameters")
 
 		
 		

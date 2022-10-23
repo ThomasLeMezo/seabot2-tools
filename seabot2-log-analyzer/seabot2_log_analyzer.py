@@ -12,7 +12,7 @@ from dock.dock_data_filter import DockDataFilter
 from dock.dock_kalman import DockKalman
 from dock.dock_depth_control import DockDepthControl
 from dock.dock_analysis import DockAnalysis
-from dock.dock_rosout import DockRosOut
+from dock.dock_log import DockLog
 
 if ('filename' in locals()):
     print("filename = ", filename)
@@ -41,7 +41,7 @@ dock_data_filter = DockDataFilter(s2b, tab)
 dock_kalman = DockKalman(s2b, tab)
 dock_depth_control = DockDepthControl(s2b, tab)
 dock_analysis = DockAnalysis(s2b, tab)
-dock_rosout = DockRosOut(s2b, tab)
+dock_log = DockLog(s2b, tab)
 
 win.show()
 

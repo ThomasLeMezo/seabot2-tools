@@ -17,5 +17,6 @@ from class_generator import generate_interface_bag_file
 # generate_interface_bag_file("pressure_bme280_driver", "Bme280Data")
 # generate_interface_bag_file("seabot2_depth_control", "DepthControlDebug")
 # generate_interface_bag_file("geometry_msgs", "Twist")
-generate_interface_bag_file("temperature_tsys01_driver", "TemperatureSensorData")
+# generate_interface_bag_file("temperature_tsys01_driver", "TemperatureSensorData")
+generate_interface_bag_file("seabot2_density", "Density")
 

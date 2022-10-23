@@ -14,17 +14,18 @@ class DockData(Seabot2Dock):
         Seabot2Dock.__init__(self, seabot2_bag)
         tabWidget.addTab(self, "Raw Data")
 
-        self.add_internal_sensor()
-        self.add_external_sensor()
+        self.add_internal_pressure()
+        self.add_external_pressure()
         self.add_piston()
         self.add_piston_velocity()
         self.add_piston_power()
         self.add_battery()
         self.add_power_state()
+        self.add_current()
         self.add_temperature()
 
-    def add_internal_sensor(self):
-        dock_internal_sensor = Dock("Internal Sensor")
+    def add_internal_pressure(self):
+        dock_internal_sensor = Dock("Internal Pressure")
         self.addDock(dock_internal_sensor, position='below')
         data = self.s2b.sensor_internal
 
@@ -50,8 +51,8 @@ class DockData(Seabot2Dock):
             pg_internal_temperature.setXLink(pg_internal_pressure)
             pg_internal_humidity.setXLink(pg_internal_pressure)
 
-    def add_external_sensor(self):
-        dock_external_sensor = Dock("External Sensor")
+    def add_external_pressure(self):
+        dock_external_sensor = Dock("External Pressure")
         self.addDock(dock_external_sensor, position='below')
 
         data = self.s2b.sensor_external
@@ -183,6 +184,26 @@ class DockData(Seabot2Dock):
             pg_power_state.plot(data.time, data.power_state[:-1], pen=(0,255,0), name="State", stepMode=True)
             pg_power_state.setLabel('left', "state")
             dock_power_state.addWidget(pg_power_state)
+
+    def add_current(self):
+        dock_current = Dock("Current")
+        self.addDock(dock_current, position='below')
+
+        data = self.s2b.power_state
+        if(not data.is_empty()):
+            pg_current_esc = pg.PlotWidget()
+            self.set_plot_options(pg_current_esc)
+            pg_current_esc.plot(data.time, data.esc_current0[:-1], pen=(0,255,0), name="ESC1", stepMode=True)
+            pg_current_esc.plot(data.time, data.esc_current1[:-1], pen=(0,0,255), name="ESC2", stepMode=True)
+            pg_current_esc.setLabel('left', "A")
+            dock_current.addWidget(pg_current_esc)
+
+            pg_current_motor = pg.PlotWidget()
+            self.set_plot_options(pg_current_motor)
+            pg_current_motor.plot(data.time, data.motor_current[:-1], pen=(0,255,0), name="motor", stepMode=True)
+            pg_current_motor.setLabel('left', "A")
+            pg_current_motor.setXLink(pg_current_esc)
+            dock_current.addWidget(pg_current_motor)
 
     def add_temperature(self):
         dock_temperature = Dock("Temperature")
