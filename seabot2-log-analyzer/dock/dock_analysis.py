@@ -192,8 +192,6 @@ class DockAnalysis(Seabot2Dock):
             return self.sk.gamma_init_velocity_
         elif(id==23):
             return self.sk.gamma_init_depth_
-        elif(id==24):
-            return self.sk.gamma_init_offset_
         elif(id==25):
             return self.sk.gamma_init_offset_
         elif(id==26):
@@ -258,8 +256,6 @@ class DockAnalysis(Seabot2Dock):
             self.sk.gamma_init_velocity_=val
         elif(id==23):
             self.sk.gamma_init_depth_=val
-        elif(id==24):
-            self.sk.gamma_init_offset_=val
         elif(id==25):
             self.sk.gamma_init_offset_=val
         elif(id==26):
@@ -309,7 +305,6 @@ class DockAnalysis(Seabot2Dock):
         pg.SpinBox():["gamma_alpha_volume_air_", 21, QtWidgets.QLabel()],
         pg.SpinBox():["gamma_init_velocity_", 22, QtWidgets.QLabel()],
         pg.SpinBox():["gamma_init_depth_", 23, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_init_offset_", 24, QtWidgets.QLabel()],
         pg.SpinBox():["gamma_init_offset_", 25, QtWidgets.QLabel()],
         pg.SpinBox():["gamma_init_chi_", 26, QtWidgets.QLabel()],
         pg.SpinBox():["gamma_init_chi2_", 27, QtWidgets.QLabel()],
@@ -334,4 +329,4 @@ class DockAnalysis(Seabot2Dock):
         layout.addWidget(button)
         button.clicked.connect(self.call_compute_kalman)   
 
-        
+        ## ToDo : Add load/save parameters

@@ -52,7 +52,7 @@ class Seabot2Bag():
 		self.fusion_power = Seabot2PowerState(bag_path, "/observer/power")
 		self.density = Seabot2Density(bag_path, "/observer/density")
 
-		self.safety_log = Seabot2SafetyLog(bag_path, "/safety/log")
+		self.safety = Seabot2SafetyLog(bag_path, "/safety/safety")
 
 		self.temperature = Seabot2TemperatureSensorData(bag_path, "/driver/temperature")
 

@@ -8,7 +8,8 @@ import numpy as np
 class Seabot2SafetyLog(Seabot2Data):
     def __init__(self, bag_path="", topic_name=""):
         Seabot2Data.__init__(self, bag_path, topic_name)
-        
+
+        self.global_safety_valid = np.empty([self.nb_elements], dtype='bool')
         self.published_frequency = np.empty([self.nb_elements], dtype='bool')
         self.depth_limit = np.empty([self.nb_elements], dtype='bool')
         self.batteries_limit = np.empty([self.nb_elements], dtype='bool')
@@ -23,6 +24,7 @@ class Seabot2SafetyLog(Seabot2Data):
 
     def process_message(self, msg):
         
+        self.global_safety_valid[self.k] = msg.global_safety_valid
         self.published_frequency[self.k] = msg.published_frequency
         self.depth_limit[self.k] = msg.depth_limit
         self.batteries_limit[self.k] = msg.batteries_limit

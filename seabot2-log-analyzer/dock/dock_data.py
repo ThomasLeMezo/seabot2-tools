@@ -210,7 +210,6 @@ class DockData(Seabot2Dock):
         self.addDock(dock_temperature, position='below')
 
         data = self.s2b.temperature
-        print(data.temperature)
         if(not data.is_empty()):
             pg_temperature = pg.PlotWidget()
             self.set_plot_options(pg_temperature)

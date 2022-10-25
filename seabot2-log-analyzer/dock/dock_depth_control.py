@@ -52,12 +52,12 @@ class DockDepthControl(Seabot2Dock):
 
         if(not data.is_empty() and not data_mission.is_empty()):
             pg_depth = self.get_pg_depth(data, None, "depth (filter)")
-            pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0,255,0), name="depth (target)", stepMode=True)
+            pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0,255,0), name="depth [target]", stepMode=True)
             dock_depth.addWidget(pg_depth)
 
             pg_velocity = pg.PlotWidget()
             self.set_plot_options(pg_velocity)
-            pg_velocity.plot(data.time, data.velocity[:-1], pen=(255,0,0), name="velocity (filter", stepMode=True)
+            pg_velocity.plot(data.time, data.velocity[:-1], pen=(255,0,0), name="velocity [filter]", stepMode=True)
             pg_velocity.plot(data_mission.time, data_mission.limit_velocity[:-1], pen=(0,255,0), name="target_velocity_max", stepMode=True)
             pg_velocity.plot(data_mission.time, -np.array(data_mission.limit_velocity[:-1]), pen=(0,255,0), name="target_velocity_min", stepMode=True)
             dock_depth.addWidget(pg_velocity)
