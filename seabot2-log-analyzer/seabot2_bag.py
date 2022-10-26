@@ -18,6 +18,7 @@ from msg.seabot2_temperature_sensor_data import Seabot2TemperatureSensorData
 from msg.seabot2_rosout import Seabot2RosOut
 from msg.seabot2_density import Seabot2Density
 from msg.seabot2_log_parameter import Seabot2LogParameter
+from msg.seabot2_profile import Seabot2Profile
 
 class Seabot2Bag():
 	def __init__(self, bag_path=""):
@@ -39,6 +40,8 @@ class Seabot2Bag():
 		self.thruster_velocity = Seabot2Velocity(bag_path, "/driver/engine")
 		self.thruster_engine_cmd = Seabot2Engine(bag_path, "/driver/cmd_engine")
 		self.thruster_engine_velocity = Seabot2Twist(bag_path, "/driver/cmd_vel")
+
+		self.profile = Seabot2Profile(bag_path, "/driver/profile")
 
 		# Mission
 		self.waypoint = Seabot2Waypoint(bag_path, "/mission/waypoint")

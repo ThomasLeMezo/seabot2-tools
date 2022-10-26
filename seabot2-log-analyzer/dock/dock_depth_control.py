@@ -44,9 +44,9 @@ class DockDepthControl(Seabot2Dock):
         return pg_regulation_state
 
     def add_depth(self):
-        dock_depth = Dock("Depth control")
+        dock_depth = Dock("Velocity")
         self.addDock(dock_depth, position='below')
-        # data = self.s2b.kalman
+        data_kalman = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
         data_mission = self.s2b.waypoint
 
@@ -58,6 +58,7 @@ class DockDepthControl(Seabot2Dock):
             pg_velocity = pg.PlotWidget()
             self.set_plot_options(pg_velocity)
             pg_velocity.plot(data.time, data.velocity[:-1], pen=(255,0,0), name="velocity [filter]", stepMode=True)
+            pg_velocity.plot(data_kalman.time, data_kalman.velocity[:-1], pen=(255,0,255), name="velocity [kalman]", stepMode=True)
             pg_velocity.plot(data_mission.time, data_mission.limit_velocity[:-1], pen=(0,255,0), name="target_velocity_max", stepMode=True)
             pg_velocity.plot(data_mission.time, -np.array(data_mission.limit_velocity[:-1]), pen=(0,255,0), name="target_velocity_min", stepMode=True)
             dock_depth.addWidget(pg_velocity)
@@ -97,7 +98,7 @@ class DockDepthControl(Seabot2Dock):
             pg_regulation_state.setXLink(pg_depth)
 
     def add_control(self):
-        dock_control = Dock("Control")
+        dock_control = Dock("Piston")
         self.addDock(dock_control, position='below')
         # data = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
@@ -122,7 +123,7 @@ class DockDepthControl(Seabot2Dock):
 
 
     def add_control2(self):
-        dock_control2 = Dock("Control2")
+        dock_control2 = Dock("Coefficients")
         self.addDock(dock_control2, position='below')
         # data = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
@@ -154,7 +155,7 @@ class DockDepthControl(Seabot2Dock):
 
 
     def add_piston_set_point(self):
-        dock_control_piston = Dock("Control piston")
+        dock_control_piston = Dock("Control u/motor speed")
         self.addDock(dock_control_piston, position='below')
         # data = self.s2b.kalman
         data = self.s2b.fusion_sensor_external

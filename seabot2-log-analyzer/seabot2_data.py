@@ -73,4 +73,5 @@ class Seabot2Data(object):
                 self.add_time(t)
             except Exception as e:
                 print("Oops!  deserialization error ", e)
+                print(topic, data, t, msg_type)
                 break
