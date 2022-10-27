@@ -116,12 +116,14 @@ class DockKalman(Seabot2Dock):
             self.set_plot_options(pg_variance_velocity)
             pg_variance_velocity.plot(data.time, data.variance0[:-1], pen=(0,255,0), name="variance velocity", stepMode=True)
             pg_variance_velocity.setLabel('left', "velocity", "")
+            pg_variance_velocity.enableAutoRange('y', 0.4)
             dock_offset.addWidget(pg_variance_velocity)
 
             pg_variance_depth = pg.PlotWidget()
             self.set_plot_options(pg_variance_depth)
             pg_variance_depth.plot(data.time, data.variance1[:-1], pen=(0,255,0), name="variance depth", stepMode=True)
             pg_variance_depth.setLabel('left', "depth", "")
+            pg_variance_depth.enableAutoRange('y', 0.4)
             dock_offset.addWidget(pg_variance_depth)
             pg_variance_depth.setXLink(pg_variance_velocity)
 
@@ -129,6 +131,7 @@ class DockKalman(Seabot2Dock):
             self.set_plot_options(pg_variance_offset)
             pg_variance_offset.plot(data.time, data.variance1[:-1], pen=(0,255,0), name="variance offset", stepMode=True)
             pg_variance_offset.setLabel('left', "offset", "")
+            pg_variance_offset.enableAutoRange('y', 0.4)
             dock_offset.addWidget(pg_variance_offset)
             pg_variance_offset.setXLink(pg_variance_velocity)
 

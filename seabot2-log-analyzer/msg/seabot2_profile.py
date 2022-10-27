@@ -17,7 +17,7 @@ class Seabot2Profile(Seabot2Data):
         self.scan_length = np.empty([self.nb_elements], dtype='uint32')
         self.gain_setting = np.empty([self.nb_elements], dtype='uint32')
         self.profile_data_length = np.empty([self.nb_elements], dtype='uint16')
-        # self.profile_data = np.empty([self.nb_elements], dtype='sequence<uint8>')
+        self.profile_data = np.empty([self.nb_elements], dtype='object')
 
 
         self.load_message()
@@ -32,5 +32,5 @@ class Seabot2Profile(Seabot2Data):
         self.scan_length[self.k] = msg.scan_length
         self.gain_setting[self.k] = msg.gain_setting
         self.profile_data_length[self.k] = msg.profile_data_length
-        # self.profile_data[self.k] = msg.profile_data
+        self.profile_data[self.k] = msg.profile_data
         return
