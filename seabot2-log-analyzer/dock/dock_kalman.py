@@ -23,7 +23,7 @@ class DockKalman(Seabot2Dock):
         #self.add_compressibility()
 
     def add_depth(self):
-        dock_kalman_state = Dock("State")
+        dock_kalman_state = Dock("Velocity")
         self.addDock(dock_kalman_state, position='below')
         data = self.s2b.kalman
         data_fusion = self.s2b.fusion_sensor_external

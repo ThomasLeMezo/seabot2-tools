@@ -41,7 +41,10 @@ class DockLog(Seabot2Dock):
         elif(t==8):
             return param.double_array_value
         elif(t==9):
-            return param.string_array_value
+            s = ""
+            for w in param.string_array_value:
+                s += (w+'\n')
+            return s
 
     def add_ros_out(self):
         dock_rosout = Dock("Rosout")

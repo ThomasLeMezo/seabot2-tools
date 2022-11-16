@@ -121,7 +121,7 @@ class DockData(Seabot2Dock):
 
             pg_velocity = pg.PlotWidget()
             self.set_plot_options(pg_velocity)
-            pg_velocity.plot(data.time[:-1], ((data.position[1:-1]-data.position[0:-2])/0.1)/self.tick_per_turn*60., pen=(255,0,0), name="velocity (rpm)", stepMode=True)
+            pg_velocity.plot(data.time[:-1], ((data.position[1:-1]-data.position[0:-2])/(data.time[1:-1]-data.time[0:-2]))/self.tick_per_turn*60., pen=(255,0,0), name="velocity (rpm)", stepMode=True)
             pg_velocity.setLabel('left', "velocity" , 'rpm')
             dock_velocity.addWidget(pg_velocity)
             pg_velocity.setXLink(pg_piston)

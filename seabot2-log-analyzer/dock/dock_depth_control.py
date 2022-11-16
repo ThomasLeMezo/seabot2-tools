@@ -164,19 +164,23 @@ class DockDepthControl(Seabot2Dock):
         data_piston = self.s2b.piston_state
 
         if(not data.is_empty()):
-            pg_depth = self.get_pg_depth(data, data_mission)
-            dock_control_piston.addWidget(pg_depth)
+            pg_control_set_point = pg.PlotWidget()
+            self.set_plot_options(pg_control_set_point)
+            pg_control_set_point.setLabel('left', "Piston state position and set point", "g")
+            pg_control_set_point.showGrid(y=True)
+            pg_control_set_point.plot(data_piston.time, (-data_piston.position[:-1]+data_piston.position_set_point[:-1])*self.tick_to_gram, pen=(0,255,0), name="set_point (control) (in g)", stepMode=True)
+            dock_control_piston.addWidget(pg_control_set_point)
 
             pg_control_u = pg.PlotWidget()
             self.set_plot_options(pg_control_u)
             pg_control_u.plot(data_control.time, data_control.u[:-1], pen=(0,255,0), name="u", stepMode=True)
             dock_control_piston.addWidget(pg_control_u)
-            pg_control_u.setXLink(pg_depth)
+            pg_control_u.setXLink(pg_control_set_point)
 
             pg_control_piston = pg.PlotWidget()
             self.set_plot_options(pg_control_piston)
             pg_control_piston.plot(data_piston.time, data_piston.motor_speed_set_point[:-1]-2000.0, pen=(0,255,0), name="motor set point", stepMode=True)
             pg_control_piston.plot(data_piston.time, data_piston.motor_speed[:-1]-2000.0, pen=(255,0,0), name="motor speed", stepMode=True)
             dock_control_piston.addWidget(pg_control_piston)
-            pg_control_piston.setXLink(pg_depth)
+            pg_control_piston.setXLink(pg_control_set_point)
 
