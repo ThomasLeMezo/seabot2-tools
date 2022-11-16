@@ -2,12 +2,14 @@
 
 import sys
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtWidgets
+from pyqtgraph.Qt import QtWidgets, QtGui
 import pyqtgraph.console
 from pyqtgraph.dockarea import *
 from .seabot2_dock import Seabot2Dock
 import numpy as np
 from scipy import signal, interpolate
+import yaml
+import os
 
 import sys
 sys.path.append("..")
@@ -99,7 +101,7 @@ class DockAnalysis(Seabot2Dock):
             offset = data.offset
             z = data.depth
             volume_air = data.volume_air
-            offset_total_gram = (offset-chi*z-chi2*np.square(z)+volume_air/(z+1.0))*1e6
+            offset_total_gram = data.offset_total
 
             r_chi = self.sk.msg_chi[:-2]
             r_chi2 = self.sk.msg_chi2[:-2]
@@ -118,6 +120,7 @@ class DockAnalysis(Seabot2Dock):
         self.replay_depth.setData(self.sk.msg_time[:-1], self.sk.msg_depth[:-2])
         self.replay_velocity.setData(self.sk.msg_time[:-1], self.sk.msg_velocity[:-2])
         self.replay_offset.setData(self.sk.msg_time[:-1], self.sk.msg_offset[:-2]*1e6)
+        self.replay_volume_air.setData(self.sk.msg_time[:-1], self.sk.msg_volume_air[:-2]*1e6)
         self.replay_volume_air.setData(self.sk.msg_time[:-1], self.sk.msg_volume_air[:-2]*1e6)
 
         r_chi = self.sk.msg_chi[:-2]
@@ -271,6 +274,36 @@ class DockAnalysis(Seabot2Dock):
         elif(id==31):
             self.sk.enable_volume_air_ = (True if val ==1 else False)
 
+
+    def open_yaml(self):
+
+        fileName = QtGui.QFileDialog.getOpenFileNames(self,caption='Param files',directory=os.path.expanduser('~/seabot2/seabot2-ros/src/seabot2/config/'),filter="*.yaml")
+        print(fileName)
+        for file in fileName[0]:
+            with open(file, "r") as stream:
+                try:
+                    data = yaml.safe_load(stream)
+
+                    for spin in self.spins:
+                        val = self._finditem(data, self.spins[spin][0])
+                        if val!=None:
+                            self.set_data_val(self.spins[spin][1],float(val))
+                            self.spins[spin][2].setText(str(val))
+                            spin.setValue(float(val))
+                            print(self.spins[spin][0], val)
+
+                except yaml.YAMLError as exc:
+                    print(exc)
+
+    # https://stackoverflow.com/questions/14962485/finding-a-key-recursively-in-a-dictionary
+    def _finditem(self, obj, key):
+        if key in obj: return obj[key]
+        for k, v in obj.items():
+            if isinstance(v,dict):
+                item = self._finditem(v, key)
+                if item is not None:
+                    return item
+
     def add_replay_kalman(self):
         dock_replay = Dock("Replay Kalman")
         self.addDock(dock_replay, position='below')
@@ -281,37 +314,37 @@ class DockAnalysis(Seabot2Dock):
         dock_replay.addWidget(cw)
 
         self.spins = {
-        pg.SpinBox():["physics_rho_", 0, QtWidgets.QLabel()],
-        pg.SpinBox():["physics_g_", 1, QtWidgets.QLabel()],
-        pg.SpinBox():["robot_mass_", 2, QtWidgets.QLabel()],
-        pg.SpinBox():["robot_diameter_", 3, QtWidgets.QLabel()],
-        pg.SpinBox():["screw_thread_", 4, QtWidgets.QLabel()],
-        pg.SpinBox():["tick_per_turn_", 5, QtWidgets.QLabel()],
-        pg.SpinBox():["piston_diameter_", 6, QtWidgets.QLabel()],
-        pg.SpinBox():["piston_max_tick_", 7, QtWidgets.QLabel()],
-        pg.SpinBox():["tick_to_volume_", 8, QtWidgets.QLabel()],
-        pg.SpinBox():["piston_max_volume_", 9, QtWidgets.QLabel()],
-        pg.SpinBox():["enable_kalman_depth_", 10, QtWidgets.QLabel()],
-        pg.SpinBox():["piston_volume_eq_init_", 11, QtWidgets.QLabel()],
-        pg.SpinBox():["init_chi_", 12, QtWidgets.QLabel()],
-        pg.SpinBox():["init_chi2_", 13, QtWidgets.QLabel()],
-        pg.SpinBox():["init_volume_air_", 14, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_velocity_", 15, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_depth_", 16, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_offset_", 17, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_chi_", 18, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_chi2_", 19, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_cz_", 20, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_volume_air_", 21, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_init_velocity_", 22, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_init_depth_", 23, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_init_offset_", 25, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_init_chi_", 26, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_init_chi2_", 27, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_init_cz_", 28, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_init_volume_air_", 29, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_beta_depth_", 30, QtWidgets.QLabel()],
-        pg.SpinBox( bounds=[0, 1], int=True):["enable_volume_air_", 31, QtWidgets.QLabel()],
+        pg.SpinBox():["physics_rho", 0, QtWidgets.QLabel()],
+        pg.SpinBox():["physics_g", 1, QtWidgets.QLabel()],
+        pg.SpinBox():["robot_mass", 2, QtWidgets.QLabel()],
+        pg.SpinBox():["robot_diameter", 3, QtWidgets.QLabel()],
+        pg.SpinBox():["screw_thread", 4, QtWidgets.QLabel()],
+        pg.SpinBox():["tick_per_turn", 5, QtWidgets.QLabel()],
+        pg.SpinBox():["piston_diameter", 6, QtWidgets.QLabel()],
+        pg.SpinBox():["piston_max_tick", 7, QtWidgets.QLabel()],
+        pg.SpinBox():["tick_to_volume", 8, QtWidgets.QLabel()],
+        pg.SpinBox():["piston_max_volume", 9, QtWidgets.QLabel()],
+        pg.SpinBox():["enable_kalman_depth", 10, QtWidgets.QLabel()],
+        pg.SpinBox():["piston_volume_eq_init", 11, QtWidgets.QLabel()],
+        pg.SpinBox():["init_chi", 12, QtWidgets.QLabel()],
+        pg.SpinBox():["init_chi2", 13, QtWidgets.QLabel()],
+        pg.SpinBox():["init_volume_air", 14, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_velocity", 15, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_depth", 16, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_offset", 17, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_chi", 18, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_chi2", 19, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_cz", 20, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_volume_air", 21, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_init_velocity", 22, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_init_depth", 23, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_init_offset", 25, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_init_chi", 26, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_init_chi2", 27, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_init_cz", 28, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_init_volume_air", 29, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_beta_depth", 30, QtWidgets.QLabel()],
+        pg.SpinBox( bounds=[0, 1], int=True):["enable_volume_air", 31, QtWidgets.QLabel()],
         }
 
         i=0
@@ -324,6 +357,10 @@ class DockAnalysis(Seabot2Dock):
             layout.addWidget(spin, i, 1)
             layout.addWidget(self.spins[spin][2], i, 2)
             i+=1
+
+        button_param = QtWidgets.QPushButton('Load parameters')
+        layout.addWidget(button_param)
+        button_param.clicked.connect(self.open_yaml)   
 
         button = QtWidgets.QPushButton('Compute Kalman')
         layout.addWidget(button)

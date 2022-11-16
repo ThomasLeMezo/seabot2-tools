@@ -279,7 +279,7 @@ class Seabot2ReplayKalman():
             self.msg_cz[self.msg_count] = self.x_forcast_[5]
             self.msg_volume_air[self.msg_count] = self.x_forcast_[6]
             if(self.x_forcast_[1]!=-1.0):
-                self.msg_offset_total[self.msg_count] = self.x_forcast_[2]+self.x_forcast_[6]/(self.x_forcast_[1]+1.0)+self.x_forcast_[3]*self.x_forcast_[1] + self.x_forcast_[4]*(self.x_forcast_[1]**2)
+                self.msg_offset_total[self.msg_count] = self.x_forcast_[2]+self.x_forcast_[6]*(288.15)/(self.physics_rho_*self.physics_g_*self.x_forcast_[1]+101325)+self.x_forcast_[3]*self.x_forcast_[1] + self.x_forcast_[4]*(self.x_forcast_[1]**2)
             self.msg_time[self.msg_count] = self.time_last_predict_
 
             self.msg_variance[self.msg_count,0] = self.gamma_forcast_[0,0]
@@ -295,7 +295,7 @@ class Seabot2ReplayKalman():
     def f_dyn(self, x, u):
         dx = np.zeros((self.nb_states))
         if(self.enable_volume_air_  and x[1]>0.):
-            dx[0] = -self.coeff_A_*(u[0]+x[2]+x[6]/(x[1]+1.0)-x[3]*x[1]-x[4]*(x[1]**2))-self.coeff_B_*x[5]*np.sign(x[0])*x[0]**2
+            dx[0] = -self.coeff_A_*(u[0]+x[2]+x[6]*(288.15)/(self.physics_rho_*self.physics_g_*x[1]+101325)-x[3]*x[1]-x[4]*(x[1]**2))-self.coeff_B_*x[5]*np.sign(x[0])*x[0]**2
         else:
             dx[0] = -self.coeff_A_*(u[0]+x[2]-x[3]*x[1]-x[4]*(x[1]**2))-self.coeff_B_*x[5]**np.sign(x[0])*x[0]**2
 
@@ -322,7 +322,7 @@ class Seabot2ReplayKalman():
         Ak[0,4] = x[1]**2*self.coeff_A_
         Ak[0,5] = -self.coeff_B_*np.abs(x[0])*x[0]
         if(self.enable_volume_air_ and x[1]>0.):
-            Ak[0,6] = -self.coeff_A_/(x[1]+1.0)
+            Ak[0,6] = -self.coeff_A_*(288.15)/(self.physics_rho_*self.physics_g_*x[1]+101325)
         else:
             Ak[0,6] = 0.
         Ak[1,0] = 1.
