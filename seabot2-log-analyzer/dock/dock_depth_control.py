@@ -51,8 +51,8 @@ class DockDepthControl(Seabot2Dock):
         data_mission = self.s2b.waypoint
 
         if(not data.is_empty() and not data_mission.is_empty()):
-            pg_depth = self.get_pg_depth(data, None, "depth (filter)")
-            pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0,255,0), name="depth [target]", stepMode=True)
+            pg_depth = self.get_pg_depth(data, data_kalman, "depth (filter)", "depth (kalman)")
+            pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0,0,255), name="depth [target]", stepMode=True)
             dock_depth.addWidget(pg_depth)
 
             pg_velocity = pg.PlotWidget()
@@ -100,7 +100,7 @@ class DockDepthControl(Seabot2Dock):
     def add_control(self):
         dock_control = Dock("Piston")
         self.addDock(dock_control, position='below')
-        # data = self.s2b.kalman
+        data_kalman = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
         data_control = self.s2b.depth_control_debug
         data_mission = self.s2b.waypoint
@@ -108,6 +108,7 @@ class DockDepthControl(Seabot2Dock):
 
         if(not data.is_empty()):
             pg_depth = self.get_pg_depth(data, data_mission)
+            pg_depth.plot(data_kalman.time, data_kalman.depth[:-1], pen=(0,0,255), name="depth [kalman]", stepMode=True)
             dock_control.addWidget(pg_depth)
 
             pg_control_set_point = pg.PlotWidget()

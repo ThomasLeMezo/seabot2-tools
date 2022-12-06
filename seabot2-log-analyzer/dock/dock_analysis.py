@@ -78,6 +78,34 @@ class DockAnalysis(Seabot2Dock):
             pg_velocity.setXLink(pg_depth)
             pg_offset.setXLink(pg_depth)
 
+    def add_replay_kalman_coefficient(self):
+        dock_kalman_coefficient = Dock("KalmanReplay Coefficients")
+        self.addDock(dock_kalman_coefficient, position='below')
+        data = self.s2b.kalman
+        data_fusion = self.s2b.fusion_sensor_external
+
+        if(not data.is_empty()):
+            pg_cz = pg.PlotWidget()
+            self.set_plot_options(pg_cz)
+            pg_cz.plot(data.time, data.cz[:-1], pen=(0,255,0), name="cz", stepMode=True)
+            self.replay_coeff_cz = pg_cz.plot(self.sk.msg_time[:-1], self.sk.msg_cz[:-2], pen=(0,0,255), name="cz [replay]", stepMode=True)
+            dock_kalman_coefficient.addWidget(pg_cz)
+
+            pg_chi = pg.PlotWidget()
+            self.set_plot_options(pg_chi)
+            pg_chi.plot(data.time, data.chi[:-1], pen=(0,255,0), name="chi", stepMode=True)
+            self.replay_coeff_chi = pg_chi.plot(self.sk.msg_time[:-1], self.sk.msg_chi[:-2], pen=(0,0,255), name="chi [replay]", stepMode=True)
+            dock_kalman_coefficient.addWidget(pg_chi)
+            pg_chi.setXLink(pg_cz)
+
+            pg_chi2 = pg.PlotWidget()
+            self.set_plot_options(pg_chi2)
+            pg_chi2.plot(data.time, data.chi2[:-1], pen=(0,255,0), name="chi2", stepMode=True)
+            self.replay_coeff_chi2 = pg_chi2.plot(self.sk.msg_time[:-1], self.sk.msg_chi2[:-2], pen=(0,0,255), name="chi2 [replay]", stepMode=True)
+            dock_kalman_coefficient.addWidget(pg_chi2)
+            pg_chi2.setXLink(pg_cz)
+            
+
     def add_replay_kalman_offset(self):
         dock_kalman_offset = Dock("KalmanReplay Offsets")
         self.addDock(dock_kalman_offset, position='below')
@@ -121,7 +149,9 @@ class DockAnalysis(Seabot2Dock):
         self.replay_velocity.setData(self.sk.msg_time[:-1], self.sk.msg_velocity[:-2])
         self.replay_offset.setData(self.sk.msg_time[:-1], self.sk.msg_offset[:-2]*1e6)
         self.replay_volume_air.setData(self.sk.msg_time[:-1], self.sk.msg_volume_air[:-2]*1e6)
-        self.replay_volume_air.setData(self.sk.msg_time[:-1], self.sk.msg_volume_air[:-2]*1e6)
+        self.replay_coeff_cz.setData(self.sk.msg_time[:-1], self.sk.msg_cz[:-2])
+        self.replay_coeff_chi.setData(self.sk.msg_time[:-1], self.sk.msg_chi[:-2])
+        self.replay_coeff_chi2.setData(self.sk.msg_time[:-1], self.sk.msg_chi2[:-2])
 
         r_chi = self.sk.msg_chi[:-2]
         r_chi2 = self.sk.msg_chi2[:-2]
@@ -133,13 +163,18 @@ class DockAnalysis(Seabot2Dock):
 
 
     def call_compute_kalman(self):
+        style = self.button.styleSheet()
+        self.button.setStyleSheet("background-color : red")
+        self.button.update()
         self.sk.process_data()
         if self.first_time_replay:
             self.add_replay_kalman_depth()
             self.add_replay_kalman_offset()
+            self.add_replay_kalman_coefficient()
             self.first_time_replay=False
         else:
             self.update_replay_kalman_depth()
+        self.button.setStyleSheet(style)
 
     def valueChanged(self, sb):
         self.set_data_val(self.spins[sb][1], sb.value())
@@ -176,24 +211,26 @@ class DockAnalysis(Seabot2Dock):
         elif(id==13):
             return self.sk.init_chi2_
         elif(id==14):
-            return self.sk.init_volume_air_
+            return self.sk.init_cz_
         elif(id==15):
-            return self.sk.gamma_alpha_velocity_
+            return self.sk.init_volume_air_
         elif(id==16):
-            return self.sk.gamma_alpha_depth_
+            return self.sk.gamma_alpha_velocity_
         elif(id==17):
-            return self.sk.gamma_alpha_offset_
+            return self.sk.gamma_alpha_depth_
         elif(id==18):
-            return self.sk.gamma_alpha_chi_
+            return self.sk.gamma_alpha_offset_
         elif(id==19):
-            return self.sk.gamma_alpha_chi2_
+            return self.sk.gamma_alpha_chi_
         elif(id==20):
-            return self.sk.gamma_alpha_cz_
+            return self.sk.gamma_alpha_chi2_
         elif(id==21):
-            return self.sk.gamma_alpha_volume_air_
+            return self.sk.gamma_alpha_cz_
         elif(id==22):
-            return self.sk.gamma_init_velocity_
+            return self.sk.gamma_alpha_volume_air_
         elif(id==23):
+            return self.sk.gamma_init_velocity_
+        elif(id==24):
             return self.sk.gamma_init_depth_
         elif(id==25):
             return self.sk.gamma_init_offset_
@@ -240,24 +277,26 @@ class DockAnalysis(Seabot2Dock):
         elif(id==13):
             self.sk.init_chi2_=val
         elif(id==14):
-            self.sk.init_volume_air_=val
+            self.sk.init_cz_=val
         elif(id==15):
-            self.sk.gamma_alpha_velocity_=val
+            self.sk.init_volume_air_=val
         elif(id==16):
-            self.sk.gamma_alpha_depth_=val
+            self.sk.gamma_alpha_velocity_=val
         elif(id==17):
-            self.sk.gamma_alpha_offset_=val
+            self.sk.gamma_alpha_depth_=val
         elif(id==18):
-            self.sk.gamma_alpha_chi_=val
+            self.sk.gamma_alpha_offset_=val
         elif(id==19):
-            self.sk.gamma_alpha_chi2_=val
+            self.sk.gamma_alpha_chi_=val
         elif(id==20):
-            self.sk.gamma_alpha_cz_=val
+            self.sk.gamma_alpha_chi2_=val
         elif(id==21):
-            self.sk.gamma_alpha_volume_air_=val
+            self.sk.gamma_alpha_cz_=val
         elif(id==22):
-            self.sk.gamma_init_velocity_=val
+            self.sk.gamma_alpha_volume_air_=val
         elif(id==23):
+            self.sk.gamma_init_velocity_=val
+        elif(id==24):
             self.sk.gamma_init_depth_=val
         elif(id==25):
             self.sk.gamma_init_offset_=val
@@ -328,16 +367,17 @@ class DockAnalysis(Seabot2Dock):
         pg.SpinBox():["piston_volume_eq_init", 11, QtWidgets.QLabel()],
         pg.SpinBox():["init_chi", 12, QtWidgets.QLabel()],
         pg.SpinBox():["init_chi2", 13, QtWidgets.QLabel()],
-        pg.SpinBox():["init_volume_air", 14, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_velocity", 15, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_depth", 16, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_offset", 17, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_chi", 18, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_chi2", 19, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_cz", 20, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_alpha_volume_air", 21, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_init_velocity", 22, QtWidgets.QLabel()],
-        pg.SpinBox():["gamma_init_depth", 23, QtWidgets.QLabel()],
+        pg.SpinBox():["init_cz", 14, QtWidgets.QLabel()],
+        pg.SpinBox():["init_volume_air", 15, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_velocity", 16, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_depth", 17, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_offset", 18, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_chi", 19, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_chi2", 20, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_cz", 21, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_alpha_volume_air", 22, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_init_velocity", 23, QtWidgets.QLabel()],
+        pg.SpinBox():["gamma_init_depth", 24, QtWidgets.QLabel()],
         pg.SpinBox():["gamma_init_offset", 25, QtWidgets.QLabel()],
         pg.SpinBox():["gamma_init_chi", 26, QtWidgets.QLabel()],
         pg.SpinBox():["gamma_init_chi2", 27, QtWidgets.QLabel()],
@@ -358,12 +398,12 @@ class DockAnalysis(Seabot2Dock):
             layout.addWidget(self.spins[spin][2], i, 2)
             i+=1
 
-        button_param = QtWidgets.QPushButton('Load parameters')
-        layout.addWidget(button_param)
-        button_param.clicked.connect(self.open_yaml)   
+        self.button_param = QtWidgets.QPushButton('Load parameters')
+        layout.addWidget(self.button_param)
+        self.button_param.clicked.connect(self.open_yaml)   
 
-        button = QtWidgets.QPushButton('Compute Kalman')
-        layout.addWidget(button)
-        button.clicked.connect(self.call_compute_kalman)   
+        self.button = QtWidgets.QPushButton('Compute Kalman')
+        layout.addWidget(self.button)
+        self.button.clicked.connect(self.call_compute_kalman)   
 
         ## ToDo : Add load/save parameters

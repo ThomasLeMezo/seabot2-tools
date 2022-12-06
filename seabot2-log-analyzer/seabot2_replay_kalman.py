@@ -66,6 +66,7 @@ class Seabot2ReplayKalman():
         self.piston_volume_eq_init_ =  80e-6
         self.init_chi_ = 0.0
         self.init_chi2_ = 0.0
+        self.init_cz_ = 1.0
         self.init_volume_air_ = 30e-6
         self.enable_volume_air_ = False
 
@@ -171,7 +172,7 @@ class Seabot2ReplayKalman():
         self.xhat_[2] = self.piston_volume_eq_init_
         self.xhat_[3] = self.init_chi_
         self.xhat_[4] = self.init_chi2_
-        self.xhat_[5] = 1.0
+        self.xhat_[5] = self.init_cz_
         if self.enable_volume_air_:
             self.xhat_[6] = self.init_volume_air_
         else:
@@ -198,7 +199,7 @@ class Seabot2ReplayKalman():
         self.gamma_alpha_[4,4] = self.gamma_alpha_chi2_**2
         self.gamma_alpha_[5,5] = self.gamma_alpha_cz_**2
         if self.enable_volume_air_:
-            self.gamma_alpha_[6,6] = self.gamma_init_volume_air_**2
+            self.gamma_alpha_[6,6] = self.gamma_alpha_volume_air_**2
         else:
             self.gamma_alpha_[6,6] = 0.
 
