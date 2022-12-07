@@ -1,7 +1,7 @@
 #!/bin/python3
 
 from msg.seabot2_waypoint import Seabot2Waypoint
-from msg.seabot2_safety_log import Seabot2SafetyLog
+from msg.seabot2_safety_status import Seabot2SafetyStatus
 from msg.seabot2_gnss_pose import Seabot2GnssPose
 from msg.seabot2_depth_pose import Seabot2DepthPose
 from msg.seabot2_kalman_state import Seabot2KalmanState
@@ -57,7 +57,7 @@ class Seabot2Bag():
 		self.fusion_power = Seabot2PowerState(bag_path, "/observer/power", start_date)
 		self.density = Seabot2Density(bag_path, "/observer/density", start_date)
 
-		self.safety = Seabot2SafetyLog(bag_path, "/safety/safety", start_date)
+		self.safety = Seabot2SafetyStatus(bag_path, "/safety/safety", start_date)
 
 		self.temperature = Seabot2TemperatureSensorData(bag_path, "/driver/temperature", start_date)
 
