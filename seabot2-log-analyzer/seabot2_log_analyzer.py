@@ -16,6 +16,8 @@ from dock.dock_log import DockLog
 from dock.dock_safety import DockSafety
 from dock.dock_ping1D import DockPing1D
 
+import datetime
+
 if ('filename' in locals()):
     print("filename = ", filename)
 else:
@@ -23,9 +25,13 @@ else:
         sys.exit(0)
     filename = sys.argv[1]
 
+start_date = datetime.datetime(2019, 1, 1)
+if len(sys.argv)>=3:
+    start_date = datetime.datetime.strptime(sys.argv[2], '%Y-%m-%d %H:%M:%S')
+    print(start_date)
 
 ## Load ros2 bag
-s2b = Seabot2Bag(filename)
+s2b = Seabot2Bag(filename, start_date)
 
 ## Display
 

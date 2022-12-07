@@ -1,4 +1,17 @@
-#!/bin/bash
-dir=`pwd`
+#!/bin/zsh
+DIRECTORY=`pwd`
 script_file=$HOME/seabot2/seabot2-tools/seabot2-log-analyzer/seabot2_log_analyzer.py
-python3 $script_file $dir/$1
+
+START_DATE=""
+for entry in $@; do
+	if [[ "$entry" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}\ [0-9]{2}:[0-9]{2}:[0-9]{2}$ ]]; then
+		START_DATE="$entry"
+		echo "Starting date = " $START_DATE
+	fi
+done
+
+for entry in $@; do
+	if [[ "$entry" != "$START_DATE" ]]; then
+		python3 $script_file $DIRECTORY/$entry $START_DATE
+	fi
+done

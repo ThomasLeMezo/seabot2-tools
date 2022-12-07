@@ -4,18 +4,28 @@ import sys
 sys.path.append('..')
 from seabot2_data import Seabot2Data
 import numpy as np
+import datetime
 
 class Seabot2Engine(Seabot2Data):
-    def __init__(self, bag_path="", topic_name=""):
-        Seabot2Data.__init__(self, bag_path, topic_name)
+    def __init__(self, bag_path="", topic_name="", start_date=datetime.datetime(2019, 1, 1)):
+        Seabot2Data.__init__(self, bag_path, topic_name, start_date)
+        self.start_date = start_date
         
         self.left = np.empty([self.nb_elements], dtype='uint8')
         self.right = np.empty([self.nb_elements], dtype='uint8')
 
         self.load_message()
+        self.resize_data_array()
+        super().resize_data_array()
 
     def process_message(self, msg):
         
         self.left[self.k] = msg.left
         self.right[self.k] = msg.right
+        return
+
+    def resize_data_array(self):
+        
+        self.left = np.resize(self.left, self.k)
+        self.right = np.resize(self.right, self.k)
         return

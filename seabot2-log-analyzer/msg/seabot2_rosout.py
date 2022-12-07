@@ -4,11 +4,12 @@ import sys
 sys.path.append('..')
 from seabot2_data import Seabot2Data
 import numpy as np
+import datetime
 
 class Seabot2RosOut(Seabot2Data):
-    def __init__(self, bag_path="", topic_name=""):
-        Seabot2Data.__init__(self, bag_path, topic_name)
-        
+    def __init__(self, bag_path="", topic_name="", start_date=datetime.datetime(2019, 1, 1)):
+        Seabot2Data.__init__(self, bag_path, topic_name, start_date)
+        self.start_date = start_date
         self.level = np.empty([self.nb_elements], dtype='int')
         self.name = np.empty([self.nb_elements], dtype='object')
         self.msg = np.empty([self.nb_elements], dtype='object')

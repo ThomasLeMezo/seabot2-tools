@@ -5,11 +5,13 @@ from rosidl_runtime_py.utilities import get_message
 from rclpy.serialization import deserialize_message
 import rosbag2_py
 import numpy as np
+import datetime
 
 class Seabot2Data(object):
-    def __init__(self, bag_path="", topic_name=""):
+    def __init__(self, bag_path="", topic_name="", start_date=datetime.datetime(2019, 1, 1)):
         self.bag_path = bag_path
         self.topic_name=topic_name
+        self.start_date = start_date
         
         ## Determine sotrage and converter options
         self.serialization_format='cdr'
@@ -49,6 +51,9 @@ class Seabot2Data(object):
     def process_message(self, msg):
         print("process_message not implemented")
 
+    def resize_data_array(self):
+        self.time = np.resize(self.time, self.k)
+
     def load_message(self):
         ## Open the file
         reader = rosbag2_py.SequentialReader()
@@ -66,12 +71,20 @@ class Seabot2Data(object):
         while reader.has_next():
             try:
                 (topic, data, t) = reader.read_next()
-                msg_type = get_message(type_map[topic])
-            
-                msg = deserialize_message(data, msg_type)
-                self.process_message(msg)
-                self.add_time(t)
+                date_msg = datetime.datetime.fromtimestamp(t/1e9)
+
+                try:
+                    if(date_msg>self.start_date):
+                        msg_type = get_message(type_map[topic])
+                    
+                        msg = deserialize_message(data, msg_type)
+                        self.process_message(msg)
+                        self.add_time(t)
+
+                except Exception as e:
+                    print("Oops!  deserialization error ", e)
+                    print(topic, data, t, msg_type)
+                    pass
             except Exception as e:
-                print("Oops!  deserialization error ", e)
-                print(topic, data, t, msg_type)
-                break
+                print("Oops!  read_next error ", e)
+                pass

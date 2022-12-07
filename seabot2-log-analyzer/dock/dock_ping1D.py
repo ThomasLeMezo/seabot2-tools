@@ -95,8 +95,12 @@ class DockPing1D(Seabot2Dock):
             for i in range(0, xn):
                 scan_length = data_profile.scan_length[i*downsampling]
                 scan_start = data_profile.scan_start[i*downsampling]
-                y[i, :] = np.linspace(scan_start, scan_length-scan_start, yn)
-                z[i, :] =  (data_profile.profile_data[i*downsampling][0:yn])
+                try:
+                    y[i, :] = np.linspace(scan_start, scan_length-scan_start, yn)
+                    z[i, :] =  (data_profile.profile_data[i*downsampling][0:yn])
+                except Exception as e:
+                    print("Oops!  error ", e)
+                    pass
 
             ## Create image item
             edgecolors   = None

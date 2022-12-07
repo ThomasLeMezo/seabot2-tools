@@ -1,0 +1,9 @@
+#!/bin/zsh
+
+DIRECTORY=`pwd`
+FILE=$DIRECTORY/$1
+SEABOT=$2
+
+echo "Send" $1 "to seabot"$SEABOT
+
+scp $FILE pi@192.168.0.10$SEABOT:~/mission.xml
