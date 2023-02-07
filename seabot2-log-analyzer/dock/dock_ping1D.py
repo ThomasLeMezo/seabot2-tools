@@ -80,11 +80,15 @@ class DockPing1D(Seabot2Dock):
         dock_profile = Dock("Data")
         self.addDock(dock_profile, position='below')
         data_profile = self.s2b.profile
+        data_kalman = self.s2b.kalman
 
         if(not data_profile.is_empty()):
             downsampling = 10
             xn = np.size(data_profile.time[0:data_profile.nb_elements:downsampling])
             yn = data_profile.profile_data_length[0]
+
+            f_depth = interpolate.interp1d(data_kalman.time, data_kalman.depth, bounds_error=False, kind="zero")
+            depth_i = f_depth(data_profile.time[0:data_profile.nb_elements:downsampling])
 
             x = np.repeat(data_profile.time[0:data_profile.nb_elements:downsampling], yn).reshape((xn, yn))
 
@@ -95,8 +99,10 @@ class DockPing1D(Seabot2Dock):
             for i in range(0, xn):
                 scan_length = data_profile.scan_length[i*downsampling]
                 scan_start = data_profile.scan_start[i*downsampling]
+                if(not np.isnan(depth_i[i])):
+                    scan_start = scan_start + depth_i[i]*1e3
                 try:
-                    y[i, :] = np.linspace(scan_start, scan_length-scan_start, yn)
+                    y[i, :] = np.linspace(scan_start, scan_length+scan_start, yn)
                     z[i, :] =  (data_profile.profile_data[i*downsampling][0:yn])
                 except Exception as e:
                     print("Oops!  error ", e)
@@ -115,7 +121,8 @@ class DockPing1D(Seabot2Dock):
             pw.addItem(pcmi)
             pw.getViewBox().invertY(True)
 
-            pw.plot(data_profile.time, data_profile.distance[:-1], pen=(255,0,0), name="distance", stepMode=True)
+            depth2_i = f_depth(data_profile.time)
+            pw.plot(data_profile.time, data_profile.distance[:-1]+depth2_i[:-1], pen=(255,0,0), name="distance", stepMode=True)
 
             dock_profile.addWidget(pw)
 

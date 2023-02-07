@@ -15,6 +15,7 @@ from dock.dock_analysis import DockAnalysis
 from dock.dock_log import DockLog
 from dock.dock_safety import DockSafety
 from dock.dock_ping1D import DockPing1D
+from dock.dock_gnss import DockGnss
 
 import datetime
 
@@ -52,6 +53,7 @@ dock_safety = DockSafety(s2b, tab)
 dock_analysis = DockAnalysis(s2b, tab)
 dock_log = DockLog(s2b, tab)
 dock_profile = DockPing1D(s2b, tab)
+data_gnss = DockGnss(s2b, tab, win, filename, start_date)
 
 win.show()
 

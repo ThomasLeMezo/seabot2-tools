@@ -6,5 +6,5 @@ echo $DIRECTORY
 for entry in $@; do
 	FILE=$DIRECTORY/$entry
 	echo $FILE
-	ros2 bag reindex $FILE 'sqlite3'
+	ros2 bag reindex $FILE -s 'sqlite3'
 done

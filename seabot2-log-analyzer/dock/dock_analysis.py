@@ -74,25 +74,26 @@ class DockAnalysis(Seabot2Dock):
 
             mask_vel = np.where(np.logical_and(np.logical_and(np.logical_and(velocity>=-velocity_limit, velocity<=velocity_limit), np.logical_and(depth_error_i>=-depth_error_limit, depth_error_i<=depth_error_limit)), depth>=depth_min))
             
-            pg_compressibility = pg.PlotWidget()
-            self.set_plot_options(pg_compressibility)
-            pg_compressibility.plot(data_kalman.depth[mask_vel], piston_volume_i[mask_vel], pen=None, symbol='x', symbol_brush=0.01, name="Piston volume") # symbolSize = 14
+            if(len(mask_vel)>1):
+                pg_compressibility = pg.PlotWidget()
+                self.set_plot_options(pg_compressibility)
+                pg_compressibility.plot(data_kalman.depth[mask_vel], piston_volume_i[mask_vel], pen=None, symbol='x', symbol_brush=0.01, name="Piston volume") # symbolSize = 14
 
-            p = np.polyfit(data_kalman.depth[mask_vel], piston_volume_i[mask_vel], 1)
-            p_min = np.min(data_kalman.depth[mask_vel])
-            p_max = np.max(data_kalman.depth[mask_vel])
-            p_x = np.linspace(p_min, p_max, 100)
+                p = np.polyfit(data_kalman.depth[mask_vel], piston_volume_i[mask_vel], 1)
+                p_min = np.min(data_kalman.depth[mask_vel])
+                p_max = np.max(data_kalman.depth[mask_vel])
+                p_x = np.linspace(p_min, p_max, 100)
 
-            p_y = p[1] + p[0]*p_x
-            pg_compressibility.plot(p_x, p_y, pen=(0,255,0), name="polyfit (1)")
+                p_y = p[1] + p[0]*p_x
+                pg_compressibility.plot(p_x, p_y, pen=(0,255,0), name="polyfit (1)")
 
-            p = np.polyfit(data_kalman.depth[mask_vel], piston_volume_i[mask_vel], 2)
-            p_y = p[2] + p[1]*p_x + p[0]*(p_x)**2
-            pg_compressibility.plot(p_x, p_y, pen=(0,0,255), name="polyfit (2)")
-            
-            pg_compressibility.setLabel('left', "Piston", "g")
-            pg_compressibility.setLabel('bottom', "Depth", "m")
-            dock_compressibility.addWidget(pg_compressibility)
+                p = np.polyfit(data_kalman.depth[mask_vel], piston_volume_i[mask_vel], 2)
+                p_y = p[2] + p[1]*p_x + p[0]*(p_x)**2
+                pg_compressibility.plot(p_x, p_y, pen=(0,0,255), name="polyfit (2)")
+                
+                pg_compressibility.setLabel('left', "Piston", "g")
+                pg_compressibility.setLabel('bottom', "Depth", "m")
+                dock_compressibility.addWidget(pg_compressibility)
 
 
     def add_replay_kalman_depth(self):

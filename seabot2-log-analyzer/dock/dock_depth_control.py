@@ -26,6 +26,7 @@ class DockDepthControl(Seabot2Dock):
         }
 
         self.add_depth()
+        self.add_depth_acc()
         self.add_mode()
         self.add_control()
         self.add_control2()
@@ -80,6 +81,56 @@ class DockDepthControl(Seabot2Dock):
             dz = beta*np.tanh(alpha*(z_bar-z))
 
             pg_velocity.plot(data.time, dz[:-1], pen=(0,0,255), name="velocity_target", stepMode=True)
+
+    def add_depth_acc(self):
+        dock_depth_acc = Dock("Acceleration")
+        self.addDock(dock_depth_acc, position='below')
+        data_kalman = self.s2b.kalman
+        data = self.s2b.fusion_sensor_external
+        data_mission = self.s2b.waypoint
+
+        if(not data.is_empty() and not data_mission.is_empty()):
+            pg_velocity = pg.PlotWidget()
+            self.set_plot_options(pg_velocity)
+            pg_velocity.plot(data.time, data.velocity[:-1], pen=(255,0,0), name="velocity [filter]", stepMode=True)
+            pg_velocity.plot(data_kalman.time, data_kalman.velocity[:-1], pen=(255,0,255), name="velocity [kalman]", stepMode=True)
+            pg_velocity.plot(data_mission.time, data_mission.limit_velocity[:-1], pen=(0,255,0), name="target_velocity_max", stepMode=True)
+            pg_velocity.plot(data_mission.time, -np.array(data_mission.limit_velocity[:-1]), pen=(0,255,0), name="target_velocity_min", stepMode=True)
+            dock_depth_acc.addWidget(pg_velocity)
+
+            z_bar = data_mission.depth
+            beta = data_mission.limit_velocity
+            alpha = data_mission.approach_velocity
+            z = data.depth
+
+            f_z_bar = interpolate.interp1d(data_mission.time, z_bar, bounds_error=False, kind="zero")
+            f_beta = interpolate.interp1d(data_mission.time, beta, bounds_error=False, kind="zero")
+            f_alpha = interpolate.interp1d(data_mission.time, alpha, bounds_error=False, kind="zero")
+
+            z_bar = f_z_bar(data.time)
+            beta = f_beta(data.time)
+            alpha = f_alpha(data.time)
+
+            e = alpha*(z_bar-z)
+            dz = beta*np.tanh(e)
+
+            pg_velocity.plot(data.time, dz[:-1], pen=(0,0,255), name="velocity_target", stepMode=True)
+
+            pg_acc = pg.PlotWidget()
+            self.set_plot_options(pg_acc)
+
+            dt = data.time[1:] - data.time[:-1]
+            acc = (data.velocity[1:] - data.velocity[:-1])/dt
+
+            acc_th_dt = (dz[1:] - dz[:-1])/dt
+            acc_th = -beta*alpha*dz*(1.-(np.tanh(e)**2))
+
+            pg_acc.plot(data.time, acc, pen=(255,0,0), name="acceleration", stepMode=True)
+            pg_acc.plot(data.time, acc_th[:-1], pen=(0,0,255), name="theorique", stepMode=True)
+            pg_acc.plot(data.time, acc_th_dt, pen=(0,255,0), name="theorique dt", stepMode=True)
+            dock_depth_acc.addWidget(pg_acc)
+
+            pg_acc.setXLink(pg_velocity)
 
     def add_mode(self):
         dock_control = Dock("Mode")
