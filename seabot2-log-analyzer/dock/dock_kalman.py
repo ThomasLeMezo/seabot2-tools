@@ -49,7 +49,7 @@ class DockKalman(Seabot2Dock):
         data_fusion = self.s2b.fusion_sensor_external
 
         if(not data.is_empty()):
-            pg_depth = self.get_pg_depth(data, data_fusion)
+            pg_depth = self.get_pg_depth(data, data_fusion, data_name="depth (kalman)", data_mission_name="depth (fusion)")
             dock_offset.addWidget(pg_depth)
 
             pg_velocity = pg.PlotWidget()

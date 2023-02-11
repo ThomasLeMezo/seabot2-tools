@@ -23,47 +23,49 @@ from msg.seabot2_profile import Seabot2Profile
 import datetime
 
 class Seabot2Bag():
-	def __init__(self, bag_path="", start_date=datetime.datetime(2019, 1, 1, 0, 0)):
+	def __init__(self, bag_path="", offset_date=datetime.datetime(2019, 1, 1, 0, 0)):
+		self.file_name = bag_path
+		self.offset_date = offset_date
 		
 		# Control
-		self.depth_control_debug = Seabot2DepthControlDebug(bag_path, "/control/depth_control_debug", start_date)
+		self.depth_control_debug = Seabot2DepthControlDebug(bag_path, "/control/depth_control_debug", offset_date)
 
 		# Driver
-		self.gps_fix = Seabot2GpsFix(bag_path, "/driver/fix", start_date)
-		# self.sensor_internal = Seabot2Bme280Data(bag_path, "/driver/sensor_internal", start_date)
-		# self.sensor_external = Seabot2PressureSensorData(bag_path, "/driver/sensor_external", start_date)
-		# self.piston_state = Seabot2PistonState(bag_path, "/driver/state", start_date)
+		self.gps_fix = Seabot2GpsFix(bag_path, "/driver/fix", offset_date)
+		# self.sensor_internal = Seabot2Bme280Data(bag_path, "/driver/sensor_internal", offset_date)
+		# self.sensor_external = Seabot2PressureSensorData(bag_path, "/driver/sensor_external", offset_date)
+		# self.piston_state = Seabot2PistonState(bag_path, "/driver/state", offset_date)
 
-		self.sensor_internal = Seabot2Bme280Data(bag_path, "/driver/pressure_internal", start_date)
-		self.sensor_external = Seabot2PressureSensorData(bag_path, "/driver/pressure_external", start_date)
-		self.piston_state = Seabot2PistonState(bag_path, "/driver/piston", start_date)
+		self.sensor_internal = Seabot2Bme280Data(bag_path, "/driver/pressure_internal", offset_date)
+		self.sensor_external = Seabot2PressureSensorData(bag_path, "/driver/pressure_external", offset_date)
+		self.piston_state = Seabot2PistonState(bag_path, "/driver/piston", offset_date)
 
-		self.power_state = Seabot2PowerState(bag_path, "/driver/power", start_date)
-		self.thruster_velocity = Seabot2Velocity(bag_path, "/driver/engine", start_date)
-		self.thruster_engine_cmd = Seabot2Engine(bag_path, "/driver/cmd_engine", start_date)
-		self.thruster_engine_velocity = Seabot2Twist(bag_path, "/driver/cmd_vel", start_date)
+		self.power_state = Seabot2PowerState(bag_path, "/driver/power", offset_date)
+		self.thruster_velocity = Seabot2Velocity(bag_path, "/driver/engine", offset_date)
+		self.thruster_engine_cmd = Seabot2Engine(bag_path, "/driver/cmd_engine", offset_date)
+		self.thruster_engine_velocity = Seabot2Twist(bag_path, "/driver/cmd_vel", offset_date)
 
-		self.profile = Seabot2Profile(bag_path, "/driver/profile", start_date)
+		self.profile = Seabot2Profile(bag_path, "/driver/profile", offset_date)
 
 		# Mission
-		self.waypoint = Seabot2Waypoint(bag_path, "/mission/waypoint", start_date)
+		self.waypoint = Seabot2Waypoint(bag_path, "/mission/waypoint", offset_date)
 
 		# Observer
-		self.fusion_sensor_external = Seabot2DepthPose(bag_path, "/observer/depth", start_date)
-		self.fusion_sensor_internal = Seabot2Bme280Data(bag_path, "/observer/pressure_internal", start_date)
-		self.kalman = Seabot2KalmanState(bag_path, "/observer/kalman", start_date)
-		self.gnss_pose = Seabot2GnssPose(bag_path, "/observer/pose", start_date)
-		self.gnss_pose_mean = Seabot2GnssPose(bag_path, "/observer/pose_mean", start_date)
-		self.fusion_power = Seabot2PowerState(bag_path, "/observer/power", start_date)
-		self.density = Seabot2Density(bag_path, "/observer/density", start_date)
+		self.fusion_sensor_external = Seabot2DepthPose(bag_path, "/observer/depth", offset_date)
+		self.fusion_sensor_internal = Seabot2Bme280Data(bag_path, "/observer/pressure_internal", offset_date)
+		self.kalman = Seabot2KalmanState(bag_path, "/observer/kalman", offset_date)
+		self.gnss_pose = Seabot2GnssPose(bag_path, "/observer/pose", offset_date)
+		self.gnss_pose_mean = Seabot2GnssPose(bag_path, "/observer/pose_mean", offset_date)
+		self.fusion_power = Seabot2PowerState(bag_path, "/observer/power", offset_date)
+		self.density = Seabot2Density(bag_path, "/observer/density", offset_date)
 
-		self.safety = Seabot2SafetyStatus(bag_path, "/safety/safety", start_date)
+		self.safety = Seabot2SafetyStatus(bag_path, "/safety/safety", offset_date)
 
-		self.temperature = Seabot2TemperatureSensorData(bag_path, "/driver/temperature", start_date)
+		self.temperature = Seabot2TemperatureSensorData(bag_path, "/driver/temperature", offset_date)
 
 		# Info
-		self.rosout = Seabot2RosOut(bag_path, "/rosout", start_date)
-		self.log_parameter = Seabot2LogParameter(bag_path, "/observer/parameters", start_date)
+		self.rosout = Seabot2RosOut(bag_path, "/rosout", offset_date)
+		self.log_parameter = Seabot2LogParameter(bag_path, "/observer/parameters", offset_date)
 
 		
 		

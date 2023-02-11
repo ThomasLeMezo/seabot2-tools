@@ -13,15 +13,14 @@ from PyQt5.QtWidgets import QFileDialog, QInputDialog
 import datetime
 
 class DockGnss(Seabot2Dock):
-    def __init__(self, seabot2_bag, tabWidget, windows, filename, start_date):
+    def __init__(self, seabot2_bag, tabWidget, windows):
         Seabot2Dock.__init__(self, seabot2_bag)
-        tabWidget.addTab(self, "Position")
+        tabWidget.addTab(self, "GNSS")
         self.win = windows
-        self.filename = filename
-        self.start_date = start_date
 
         self.add_position()
         self.add_fix()
+        self.add_time()
 
     def save_gpx(self):
         import gpxpy
@@ -35,7 +34,7 @@ class DockGnss(Seabot2Dock):
         gpx_track = gpxpy.gpx.GPXTrack()
         gpx_segment = gpxpy.gpx.GPXTrackSegment()
 
-        filepath = QFileDialog.getSaveFileName(self.win,"Save file", str(self.filename[:-4])+".gpx","GPX (*.gpx)")
+        filepath = QFileDialog.getSaveFileName(self.win,"Save file", str(self.file_name[:-4])+".gpx","GPX (*.gpx)")
         print(filepath)
         if(filepath[0]==''):
             return
@@ -61,7 +60,7 @@ class DockGnss(Seabot2Dock):
         file = open(filepath[0],"w")
         file.write(gpx.to_xml())
         file.close()
-        print("start date", self.start_date)
+        print("start date", data.start_date)
 
     def add_position(self):
         dock_position = Dock("GNSS")
@@ -93,13 +92,38 @@ class DockGnss(Seabot2Dock):
 
             pg_status = pg.PlotWidget()
             pg_status.plot(data.time, data.status[:-1], pen=(255,0,0), name="status", stepMode=True)
+            pg_status.setLabel('left', "status")
             dock_fix.addWidget(pg_status)
             pg_status.setXLink(pg_depth)
 
             pg_mode = pg.PlotWidget()
             pg_mode.plot(data.time, data.mode[:-1], pen=(255,0,0), name="mode", stepMode=True)
+            pg_mode.setLabel('left', "mode")
             dock_fix.addWidget(pg_mode)
             pg_mode.setXLink(pg_depth)
 
+    def add_time(self):
+        dock_time = Dock("Time")
+        self.addDock(dock_time, position='below')
+        data = self.s2b.gps_fix
+        data_kalman = self.s2b.kalman
+        data_mission = self.s2b.waypoint
+
+        if(not data.is_empty()):
+            pg_depth = self.get_pg_depth(data_kalman, data_mission, "depth (kalman)", "depth (mission)")
+            dock_time.addWidget(pg_depth)
+
+            pg_time = pg.PlotWidget()
+            pg_time.plot(data.time, ((data.starting_time.timestamp()+data.time)-data.time_gnss)[:-1], pen=(255,0,0), name="time offset", stepMode=True)
+            pg_time.setLabel('left', "time error with GNSS")
+            dock_time.addWidget(pg_time)
+            pg_time.setXLink(pg_depth)
+
+            pg_mission_time = pg.PlotWidget()
+            pg_mission_time.plot(np.arange(np.size(data_mission.time)), data_mission.time[:-1], pen=(255,0,0), name="time of mission message", stepMode=True)
+            pg_mission_time.setLabel('left', "time to next wp")
+            dock_time.addWidget(pg_mission_time)
+            pg_mission_time.setXLink(pg_depth)
             
+
             

@@ -8,10 +8,10 @@ import numpy as np
 import datetime
 
 class Seabot2Data(object):
-    def __init__(self, bag_path="", topic_name="", start_date=datetime.datetime(2019, 1, 1)):
+    def __init__(self, bag_path="", topic_name="", offset_date=datetime.datetime(2019, 1, 1)):
         self.bag_path = bag_path
         self.topic_name=topic_name
-        self.start_date = start_date
+        self.offset_date = offset_date
         
         ## Determine sotrage and converter options
         self.serialization_format='cdr'
@@ -74,7 +74,7 @@ class Seabot2Data(object):
                 date_msg = datetime.datetime.fromtimestamp(t/1e9)
 
                 try:
-                    if(date_msg>self.start_date):
+                    if(date_msg>self.offset_date):
                         msg_type = get_message(type_map[topic])
                     
                         msg = deserialize_message(data, msg_type)

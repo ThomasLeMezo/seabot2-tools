@@ -26,13 +26,13 @@ else:
         sys.exit(0)
     filename = sys.argv[1]
 
-start_date = datetime.datetime(2019, 1, 1)
+offset_date = datetime.datetime(2019, 1, 1)
 if len(sys.argv)>=3:
-    start_date = datetime.datetime.strptime(sys.argv[2], '%Y-%m-%d %H:%M:%S')
-    print(start_date)
+    offset_date = datetime.datetime.strptime(sys.argv[2], '%Y-%m-%d %H:%M:%S')
+    print(offset_date)
 
 ## Load ros2 bag
-s2b = Seabot2Bag(filename, start_date)
+s2b = Seabot2Bag(filename, offset_date)
 
 ## Display
 
@@ -53,7 +53,7 @@ dock_safety = DockSafety(s2b, tab)
 dock_analysis = DockAnalysis(s2b, tab)
 dock_log = DockLog(s2b, tab)
 dock_profile = DockPing1D(s2b, tab)
-data_gnss = DockGnss(s2b, tab, win, filename, start_date)
+data_gnss = DockGnss(s2b, tab, win)
 
 win.show()
 

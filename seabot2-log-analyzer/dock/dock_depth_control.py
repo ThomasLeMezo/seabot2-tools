@@ -218,9 +218,9 @@ class DockDepthControl(Seabot2Dock):
         if(not data.is_empty()):
             pg_control_set_point = pg.PlotWidget()
             self.set_plot_options(pg_control_set_point)
-            pg_control_set_point.setLabel('left', "Piston state position and set point", "g")
+            pg_control_set_point.setLabel('left', "Error of position", "ticks")
             pg_control_set_point.showGrid(y=True)
-            pg_control_set_point.plot(data_piston.time, (-data_piston.position[:-1]+data_piston.position_set_point[:-1])*self.tick_to_gram, pen=(0,255,0), name="set_point (control) (in g)", stepMode=True)
+            pg_control_set_point.plot(data_piston.time, (data_piston.position_set_point[:-1]-data_piston.position[:-1]), pen=(0,255,0), name="Error of position", stepMode=True)
             dock_control_piston.addWidget(pg_control_set_point)
 
             pg_control_u = pg.PlotWidget()

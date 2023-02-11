@@ -18,6 +18,7 @@ class DockDataFilter(Seabot2Dock):
         self.add_external_sensor()
         self.add_power_filter()
         self.add_density()
+        self.add_sound_speed()
 
     def add_internal_sensor(self):
         dock_internal_sensor = Dock("Internal Sensor")
@@ -102,7 +103,26 @@ class DockDataFilter(Seabot2Dock):
 
             pg_density = pg.PlotWidget()
             self.set_plot_options(pg_density)
-            pg_density.plot(data.time, data.density[:-1], pen=(0,255,0), name="denisty", stepMode=True)
+            pg_density.plot(data.time, data.density[:-1], pen=(0,255,0), name="density", stepMode=True)
             pg_density.setLabel('left', "kg/m3")
             dock_density.addWidget(pg_density)
             pg_density.setXLink(pg_depth)
+
+    def add_sound_speed(self):
+        dock_sound_speed = Dock("Sound Speed")
+        self.addDock(dock_sound_speed, position='below')
+
+        data = self.s2b.density
+        data_fusion = self.s2b.fusion_sensor_external
+        data_mission = self.s2b.waypoint
+
+        if(not data.is_empty()):
+            pg_depth = self.get_pg_depth(data_fusion, data_mission, data_name="depth", data_mission_name="mission")
+            dock_sound_speed.addWidget(pg_depth)
+
+            pg_sound_speed = pg.PlotWidget()
+            self.set_plot_options(pg_sound_speed)
+            pg_sound_speed.plot(data.time, data.sound_speed[:-1], pen=(0,255,0), name="sound speed", stepMode=True)
+            pg_sound_speed.setLabel('left', "m/s")
+            dock_sound_speed.addWidget(pg_sound_speed)
+            pg_sound_speed.setXLink(pg_depth)

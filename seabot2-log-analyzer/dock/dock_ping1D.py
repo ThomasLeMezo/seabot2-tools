@@ -20,6 +20,7 @@ class DockPing1D(Seabot2Dock):
         self.add_altitude()
         self.add_parameters()
         self.add_data()
+        self.add_bathy()
 
     def add_altitude(self):
         dock_altitude = Dock("Altitude")
@@ -43,7 +44,25 @@ class DockPing1D(Seabot2Dock):
             self.set_plot_options(pg_confidence)
             pg_confidence.addItem(pg.PlotCurveItem(data_profile.time, data_profile.confidence[:-1], pen=(0,0,255), name="condidence", stepMode=True))
             dock_altitude.addWidget(pg_confidence)
-            pg_confidence.setXLink(pg_depth)            
+            pg_confidence.setXLink(pg_depth)
+
+    def add_bathy(self):
+        dock_bathy = Dock("Bathy")
+        self.addDock(dock_bathy, position='below')
+        data_kalman = self.s2b.kalman
+        data_profile = self.s2b.profile
+
+        if(not data_profile.is_empty() and not data_kalman.is_empty()):
+
+            f_depth = interpolate.interp1d(data_kalman.time, data_kalman.depth, bounds_error=False, kind="zero")
+            depth_i = f_depth(data_profile.time)
+
+            bathy = data_profile.distance[:-1]/1e3 + depth_i[:-1]
+
+            pg_depth = pg.PlotWidget()
+            pg_depth.plot(data_profile.time, bathy, pen=(0,255,0), name="bathy", stepMode=True)
+            pg_depth.getViewBox().invertY(True)
+            dock_bathy.addWidget(pg_depth)     
 
     def add_parameters(self):
         dock_details = Dock("Details")
@@ -82,7 +101,7 @@ class DockPing1D(Seabot2Dock):
         data_profile = self.s2b.profile
         data_kalman = self.s2b.kalman
 
-        if(not data_profile.is_empty()):
+        if(not data_profile.is_empty() and not data_kalman.is_empty()):
             downsampling = 10
             xn = np.size(data_profile.time[0:data_profile.nb_elements:downsampling])
             yn = data_profile.profile_data_length[0]
@@ -122,7 +141,7 @@ class DockPing1D(Seabot2Dock):
             pw.getViewBox().invertY(True)
 
             depth2_i = f_depth(data_profile.time)
-            pw.plot(data_profile.time, data_profile.distance[:-1]+depth2_i[:-1], pen=(255,0,0), name="distance", stepMode=True)
+            pw.plot(data_profile.time, data_profile.distance[:-1]+depth2_i[:-1]*1e3, pen=(255,0,0), name="distance", stepMode=True)
 
             dock_profile.addWidget(pw)
 

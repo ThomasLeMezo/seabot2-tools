@@ -12,6 +12,7 @@ class Seabot2Density(Seabot2Data):
         self.start_date = start_date
         
         self.density = np.empty([self.nb_elements], dtype='float')
+        self.sound_speed = np.empty([self.nb_elements], dtype='float')
 
         self.load_message()
         self.resize_data_array()
@@ -20,9 +21,11 @@ class Seabot2Density(Seabot2Data):
     def process_message(self, msg):
         
         self.density[self.k] = msg.density
+        self.sound_speed[self.k] = msg.sound_speed
         return
 
     def resize_data_array(self):
         
         self.density = np.resize(self.density, self.k)
+        self.sound_speed = np.resize(self.sound_speed, self.k)
         return

@@ -126,6 +126,13 @@ class DockData(Seabot2Dock):
             dock_velocity.addWidget(pg_velocity)
             pg_velocity.setXLink(pg_piston)
 
+            pg_control_piston = pg.PlotWidget()
+            self.set_plot_options(pg_control_piston)
+            pg_control_piston.plot(data.time, data.motor_speed_set_point[:-1]-2000.0, pen=(0,255,0), name="motor set point", stepMode=True)
+            pg_control_piston.plot(data.time, data.motor_speed[:-1]-2000.0, pen=(255,0,0), name="motor speed", stepMode=True)
+            dock_velocity.addWidget(pg_control_piston)
+            pg_control_piston.setXLink(pg_piston)
+
     def add_piston_power(self):
         dock_piston_power = Dock("Piston power")
         self.addDock(dock_piston_power, position='below')

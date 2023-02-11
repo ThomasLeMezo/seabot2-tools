@@ -18,7 +18,7 @@ class Seabot2GpsFix(Seabot2Data):
         self.altitude = np.empty([self.nb_elements], dtype='double')
         self.track = np.empty([self.nb_elements], dtype='double')
         self.speed = np.empty([self.nb_elements], dtype='double')
-        self.time = np.empty([self.nb_elements], dtype='double')
+        self.time_gnss = np.empty([self.nb_elements], dtype='double')
         self.gdop = np.empty([self.nb_elements], dtype='double')
         self.pdop = np.empty([self.nb_elements], dtype='double')
         self.hdop = np.empty([self.nb_elements], dtype='double')
@@ -44,7 +44,7 @@ class Seabot2GpsFix(Seabot2Data):
         self.altitude[self.k] = msg.altitude
         self.track[self.k] = msg.track
         self.speed[self.k] = msg.speed
-        self.time[self.k] = msg.time
+        self.time_gnss[self.k] = msg.time
         self.gdop[self.k] = msg.gdop
         self.pdop[self.k] = msg.pdop
         self.hdop[self.k] = msg.hdop
@@ -67,7 +67,7 @@ class Seabot2GpsFix(Seabot2Data):
         self.altitude = np.resize(self.altitude, self.k)
         self.track = np.resize(self.track, self.k)
         self.speed = np.resize(self.speed, self.k)
-        self.time = np.resize(self.time, self.k)
+        self.time_gnss = np.resize(self.time_gnss, self.k)
         self.gdop = np.resize(self.gdop, self.k)
         self.pdop = np.resize(self.pdop, self.k)
         self.hdop = np.resize(self.hdop, self.k)

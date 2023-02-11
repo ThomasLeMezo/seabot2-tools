@@ -16,6 +16,7 @@ class DockSafety(Seabot2Dock):
 
         self.add_global_safety()
         self.add_cpu_ram()
+        self.add_limit_depth()
 
     def add_global_safety(self):
         dock_kalman_state = Dock("Global Safety")
@@ -24,7 +25,7 @@ class DockSafety(Seabot2Dock):
         data_mission = self.s2b.waypoint
         data_safety = self.s2b.safety
 
-        if(not data_depth.is_empty() and not data_mission.is_empty()):
+        if(not data_depth.is_empty() and not data_mission.is_empty() and not data_safety.is_empty()):
             pg_depth = self.get_pg_depth(data_depth, None, "depth (filter)")
             pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0,255,0), name="depth (target)", stepMode=True)
             dock_kalman_state.addWidget(pg_depth)
@@ -68,3 +69,22 @@ class DockSafety(Seabot2Dock):
             pg_ram.plot(data_safety.time, data_safety.ram[:-1], pen=(255,0,0), name="ram", stepMode=True)
             dock_cpu_ram.addWidget(pg_ram)
             pg_ram.setXLink(pg_depth)
+
+    def add_limit_depth(self):
+        dock_kalman_state = Dock("Depth limit")
+        self.addDock(dock_kalman_state, position='below')
+        data_depth = self.s2b.fusion_sensor_external
+        data_mission = self.s2b.waypoint
+        data_safety = self.s2b.safety
+
+        if(not data_depth.is_empty() and not data_mission.is_empty() and not data_safety.is_empty()):
+            pg_depth = self.get_pg_depth(data_depth, None, "depth (filter)")
+            pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0,255,0), name="depth (target)", stepMode=True)
+            dock_kalman_state.addWidget(pg_depth)
+
+            pg_depth_limit = pg.PlotWidget()
+            self.set_plot_options(pg_depth_limit)
+            pg_depth_limit.plot(data_safety.time, data_safety.depth_limit[:-1], pen=(255,0,0), name="depth limit", stepMode=True)
+
+            dock_kalman_state.addWidget(pg_depth_limit)
+            pg_depth_limit.setXLink(pg_depth)
