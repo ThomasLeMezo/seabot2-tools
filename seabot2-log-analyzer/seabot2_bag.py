@@ -32,9 +32,6 @@ class Seabot2Bag():
 
 		# Driver
 		self.gps_fix = Seabot2GpsFix(bag_path, "/driver/fix", offset_date)
-		# self.sensor_internal = Seabot2Bme280Data(bag_path, "/driver/sensor_internal", offset_date)
-		# self.sensor_external = Seabot2PressureSensorData(bag_path, "/driver/sensor_external", offset_date)
-		# self.piston_state = Seabot2PistonState(bag_path, "/driver/state", offset_date)
 
 		self.sensor_internal = Seabot2Bme280Data(bag_path, "/driver/pressure_internal", offset_date)
 		self.sensor_external = Seabot2PressureSensorData(bag_path, "/driver/pressure_external", offset_date)
@@ -46,6 +43,7 @@ class Seabot2Bag():
 		self.thruster_engine_velocity = Seabot2Twist(bag_path, "/driver/cmd_vel", offset_date)
 
 		self.profile = Seabot2Profile(bag_path, "/driver/profile", offset_date)
+		self.temperature = Seabot2TemperatureSensorData(bag_path, "/driver/temperature", offset_date)
 
 		# Mission
 		self.waypoint = Seabot2Waypoint(bag_path, "/mission/waypoint", offset_date)
@@ -61,19 +59,7 @@ class Seabot2Bag():
 
 		self.safety = Seabot2SafetyStatus(bag_path, "/safety/safety", offset_date)
 
-		self.temperature = Seabot2TemperatureSensorData(bag_path, "/driver/temperature", offset_date)
-
 		# Info
 		self.rosout = Seabot2RosOut(bag_path, "/rosout", offset_date)
 		self.log_parameter = Seabot2LogParameter(bag_path, "/observer/parameters", offset_date)
-
-		
-		
-		
-		
-		
-		
-		
-		
-		
 		

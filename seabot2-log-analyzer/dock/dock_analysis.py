@@ -21,6 +21,7 @@ class DockAnalysis(Seabot2Dock):
         tabWidget.addTab(self, "Analysis")
 
         self.add_temperature_depth()
+        self.add_temperature_profile()
         self.add_piston_depth()
 
         self.first_time_replay = True
@@ -49,6 +50,37 @@ class DockAnalysis(Seabot2Dock):
             pg_temperature_temperature.setLabel('left', "Depth", "m")
             pg_temperature_temperature.getViewBox().invertY(True)
             dock_temperature_depth.addWidget(pg_temperature_temperature)
+
+    def add_temperature_profile(self):
+        dock_temperature_depth = Dock("Temperature Profile")
+        self.addDock(dock_temperature_depth, position='below')
+
+        data_temp = self.s2b.temperature
+        data_mission = self.s2b.waypoint
+        data_depth = self.s2b.fusion_sensor_external
+
+        if(not data_temp.is_empty() and not data_mission.is_empty() and not data_depth.is_empty()):
+            pg_temperature_profile = pg.PlotWidget()
+            self.set_plot_options(pg_temperature_profile)
+
+            f_temp = interpolate.interp1d(data_temp.time, data_temp.temperature, bounds_error=False, kind="zero")
+            temp_interp = f_temp(data_depth.time)
+
+            f_mission = interpolate.interp1d(data_mission.time, data_mission.depth, bounds_error=False, kind="previous")
+            mission_depth_interp = f_mission(data_depth.time)
+
+            id_new_wp = np.where(mission_depth_interp[:-1] != mission_depth_interp[1:])[0]
+            id_new_wp = np.insert(id_new_wp, 0, 0)
+
+            for i in range(np.size(id_new_wp)-1):
+                if not np.isnan(mission_depth_interp[id_new_wp[i]]):
+                    pg_temperature_profile.plot(temp_interp[id_new_wp[i]:id_new_wp[i+1]], data_depth.depth[id_new_wp[i]:id_new_wp[i+1]][:-1], pen=(255*i/np.size(id_new_wp),0,150), name="Profile " + str(mission_depth_interp[id_new_wp[i]]), stepMode=True)
+
+            pg_temperature_profile.setLabel('bottom', "Temperature", "°C")
+            pg_temperature_profile.setLabel('left', "Depth", "m")
+            pg_temperature_profile.getViewBox().invertY(True)
+            dock_temperature_depth.addWidget(pg_temperature_profile)
+
 
     def add_piston_depth(self):
         dock_compressibility = Dock("Piston/Depth")

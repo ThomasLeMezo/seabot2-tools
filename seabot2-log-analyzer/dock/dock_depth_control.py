@@ -161,6 +161,7 @@ class DockDepthControl(Seabot2Dock):
             pg_depth = self.get_pg_depth(data, data_mission)
             pg_depth.plot(data_kalman.time, data_kalman.depth[:-1], pen=(0,0,255), name="depth [kalman]", stepMode=True)
             dock_control.addWidget(pg_depth)
+            self.add_label_time(pg_depth, data.starting_time)
 
             pg_control_set_point = pg.PlotWidget()
             self.set_plot_options(pg_control_set_point)

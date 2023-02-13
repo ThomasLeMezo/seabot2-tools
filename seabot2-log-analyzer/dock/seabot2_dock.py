@@ -6,6 +6,7 @@ from pyqtgraph.Qt import QtWidgets
 import pyqtgraph.console
 from pyqtgraph.dockarea import *
 import numpy as np
+import datetime
 
 class Seabot2Dock(DockArea):
     def __init__(self, seabot2_bag):
@@ -17,8 +18,8 @@ class Seabot2Dock(DockArea):
         self.tick_to_volume = (screw_thread/self.tick_per_turn)*pow(piston_diameter/2.0, 2)*np.pi;
         self.tick_to_gram = self.tick_to_volume*1e6
 
-    def set_plot_options(self, pg):
-        pg.addLegend()
+    def set_plot_options(self, plot):
+        plot.addLegend()
 
     def plot_piston_position(self):
         data = self.s2b.piston_state
@@ -58,3 +59,24 @@ class Seabot2Dock(DockArea):
         pg_depth.getViewBox().invertY(True)
         
         return pg_depth
+
+    def add_label_time(self, p1, starting_time):
+        vLine = pg.InfiniteLine(angle=90, movable=False)
+        p1.addItem(vLine, ignoreBounds=True)
+
+        if p1.plotItem.legend is None:
+            self.set_plot_options(p1)
+        p1.plotItem.legend.addItem(p1.plotItem.items[0], "time")
+        #label.setText("<span style='font-size: 12pt'>x=%0.1f" % 0)
+
+        def mouseMoved(evt):
+            pos = evt[0]  ## using signal proxy turns original arguments into a tuple
+            if p1.sceneBoundingRect().contains(pos):
+                mousePoint = p1.getViewBox().mapSceneToView(pos)
+                t = starting_time + datetime.timedelta(seconds = mousePoint.x()) 
+                ts_string = t.strftime("%Y-%m-%d %H:%M:%S")
+
+                p1.plotItem.legend.items[-1][1].setText(ts_string)
+                vLine.setPos(mousePoint.x())
+
+        self.proxy = pg.SignalProxy(p1.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)

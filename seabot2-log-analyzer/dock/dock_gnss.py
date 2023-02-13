@@ -30,31 +30,39 @@ class DockGnss(Seabot2Dock):
 
         gpx = gpxpy.gpx.GPX()
         last_fix_time = 0.
+        is_fix_mode = False
 
         gpx_track = gpxpy.gpx.GPXTrack()
-        gpx_segment = gpxpy.gpx.GPXTrackSegment()
+        gpx_segments = []
 
-        filepath = QFileDialog.getSaveFileName(self.win,"Save file", str(self.file_name[:-4])+".gpx","GPX (*.gpx)")
+        filepath = QFileDialog.getSaveFileName(self.win,"Save file", str(data.bag_path)+".gpx","GPX (*.gpx)")
         print(filepath)
         if(filepath[0]==''):
             return
-        sec_delay, ok = QInputDialog.getDouble(self.win, "GPX Export : sample rate","Seconds between two points", 0.0, 0.0, 1000.0, 1)
-        if(not ok):
-            return
+        # sec_delay, ok = QInputDialog.getDouble(self.win, "GPX Export : sample rate","Seconds between two points", 0.0, 0.0, 1000.0, 1)
+        # if(not ok):
+        #     return
 
         for i in range(len(data.latitude)):
-            if(abs(last_fix_time-data.time[i])>float(sec_delay)):
-                if(data.mode[i]==3):
-                    last_fix_time = data.time[i]
+            if(data.mode[i]>1):
+                if not is_fix_mode:
+                    gpx_segments.append(gpxpy.gpx.GPXTrackSegment())
+                    is_fix_mode = True
 
-                    gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(latitude=data.latitude[i],
-                        longitude=data.longitude[i],
-                        elevation=data.altitude[i],
-                        time=datetime.datetime.fromtimestamp(data.time[i]),
-                        horizontal_dilution=data.hdop[i],
-                        vertical_dilution=data.hdop[i]
-                        ))
-        gpx_track.segments.append(gpx_segment)
+                gpx_segments[-1].points.append(gpxpy.gpx.GPXTrackPoint(latitude=data.latitude[i],
+                    longitude=data.longitude[i],
+                    elevation=data.altitude[i],
+                    time=datetime.datetime.fromtimestamp(data.time_gnss[i]),
+                    horizontal_dilution=data.hdop[i],
+                    vertical_dilution=data.vdop[i],
+                    speed=data.speed[i],
+                    comment=str(data.mode[i])
+                    ))
+            else:
+                is_fix_mode = False
+
+        for seg in gpx_segments:
+            gpx_track.segments.append(seg)
         gpx.tracks.append(gpx_track)
 
         file = open(filepath[0],"w")
@@ -120,7 +128,7 @@ class DockGnss(Seabot2Dock):
             pg_time.setXLink(pg_depth)
 
             pg_mission_time = pg.PlotWidget()
-            pg_mission_time.plot(np.arange(np.size(data_mission.time)), data_mission.time[:-1], pen=(255,0,0), name="time of mission message", stepMode=True)
+            pg_mission_time.plot(data_mission.time, np.arange(np.size(data_mission.time)-1), pen=(255,0,0), name="time of mission message", stepMode=True)
             pg_mission_time.setLabel('left', "time to next wp")
             dock_time.addWidget(pg_mission_time)
             pg_mission_time.setXLink(pg_depth)
