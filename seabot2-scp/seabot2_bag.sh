@@ -1,9 +1,27 @@
 #!/bin/zsh
 
 DIRECTORY=`pwd`
-FILE=$1
-SEABOT=$2
+SEABOT=$1
+USER=pi
+IP=192.168.0.10
 
-echo "Get" $1 "from seabot"$SEABOT
+FILES=($(ssh $USER@$IP$SEABOT ls /home/$USER/log))
 
-scp -r pi@192.168.0.10$SEABOT:~/log/$FILE $DIRECTORY
+COUNTER=0
+for f in $FILES; do
+        echo $COUNTER $f
+        ((COUNTER++))
+done
+
+echo -n "Enter file number (default 0) : "
+read USERINPUT
+
+if [[ $USERINPUT == "" ]]; then
+	USERINPUT=0
+fi
+
+((USERINPUT++))
+FILE=($FILES[$USERINPUT])
+echo "Download " $FILE " from Seabot" $SEABOT 
+
+scp -r $USER@$IP$SEABOT:~/log/$FILE $DIRECTORY
