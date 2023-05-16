@@ -31,6 +31,7 @@ class DockDepthControl(Seabot2Dock):
         self.add_control()
         self.add_control2()
         self.add_piston_set_point()
+        self.add_alpha()
         
 
     def plot_regulation_state(self, data_control):
@@ -50,6 +51,7 @@ class DockDepthControl(Seabot2Dock):
         data_kalman = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
         data_mission = self.s2b.waypoint
+        data_alpha = self.s2b.alpha_debug
 
         if(not data.is_empty() and not data_mission.is_empty()):
             pg_depth = self.get_pg_depth(data, data_kalman, "depth (filter)", "depth (kalman)")
@@ -67,12 +69,12 @@ class DockDepthControl(Seabot2Dock):
 
             z_bar = data_mission.depth
             beta = data_mission.limit_velocity
-            alpha = data_mission.approach_velocity
+            alpha = data_alpha.approach_velocity
             z = data.depth
 
             f_z_bar = interpolate.interp1d(data_mission.time, z_bar, bounds_error=False, kind="zero")
             f_beta = interpolate.interp1d(data_mission.time, beta, bounds_error=False, kind="zero")
-            f_alpha = interpolate.interp1d(data_mission.time, alpha, bounds_error=False, kind="zero")
+            f_alpha = interpolate.interp1d(data_alpha.time, alpha, bounds_error=False, kind="zero")
 
             z_bar = f_z_bar(data.time)
             beta = f_beta(data.time)
@@ -88,6 +90,7 @@ class DockDepthControl(Seabot2Dock):
         data_kalman = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
         data_mission = self.s2b.waypoint
+        data_alpha = self.s2b.alpha_debug
 
         if(not data.is_empty() and not data_mission.is_empty()):
             pg_velocity = pg.PlotWidget()
@@ -100,12 +103,12 @@ class DockDepthControl(Seabot2Dock):
 
             z_bar = data_mission.depth
             beta = data_mission.limit_velocity
-            alpha = data_mission.approach_velocity
+            alpha = data_alpha.approach_velocity
             z = data.depth
 
             f_z_bar = interpolate.interp1d(data_mission.time, z_bar, bounds_error=False, kind="zero")
             f_beta = interpolate.interp1d(data_mission.time, beta, bounds_error=False, kind="zero")
-            f_alpha = interpolate.interp1d(data_mission.time, alpha, bounds_error=False, kind="zero")
+            f_alpha = interpolate.interp1d(data_alpha.time, alpha, bounds_error=False, kind="zero")
 
             z_bar = f_z_bar(data.time)
             beta = f_beta(data.time)
@@ -237,3 +240,48 @@ class DockDepthControl(Seabot2Dock):
             dock_control_piston.addWidget(pg_control_piston)
             pg_control_piston.setXLink(pg_control_set_point)
 
+
+    def add_alpha(self):
+        dock_alpha = Dock("Alpha")
+        self.addDock(dock_alpha, position='below')
+        data_kalman = self.s2b.kalman
+        data = self.s2b.fusion_sensor_external
+        data_mission = self.s2b.waypoint
+        data_alpha = self.s2b.alpha_debug
+
+        if(not data.is_empty() and not data_mission.is_empty()):
+            pg_depth = self.get_pg_depth(data, data_kalman, "depth (filter)", "depth (kalman)")
+            pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0,0,255), name="depth [target]", stepMode=True)
+            dock_alpha.addWidget(pg_depth)
+
+            pg_velocity = pg.PlotWidget()
+            self.set_plot_options(pg_velocity)
+            pg_velocity.plot(data.time, data.velocity[:-1], pen=(255,0,0), name="velocity [filter]", stepMode=True)
+            pg_velocity.plot(data_kalman.time, data_kalman.velocity[:-1], pen=(255,0,255), name="velocity [kalman]", stepMode=True)
+            pg_velocity.plot(data_mission.time, data_mission.limit_velocity[:-1], pen=(0,255,0), name="target_velocity_max", stepMode=True)
+            pg_velocity.plot(data_mission.time, -np.array(data_mission.limit_velocity[:-1]), pen=(0,255,0), name="target_velocity_min", stepMode=True)
+            dock_alpha.addWidget(pg_velocity)
+            pg_velocity.setXLink(pg_depth)
+
+            z_bar = data_mission.depth
+            beta = data_mission.limit_velocity
+            alpha = data_alpha.approach_velocity
+            z = data.depth
+
+            f_z_bar = interpolate.interp1d(data_mission.time, z_bar, bounds_error=False, kind="zero")
+            f_beta = interpolate.interp1d(data_mission.time, beta, bounds_error=False, kind="zero")
+            f_alpha = interpolate.interp1d(data_alpha.time, alpha, bounds_error=False, kind="zero")
+
+            z_bar = f_z_bar(data.time)
+            beta = f_beta(data.time)
+            alpha = f_alpha(data.time)
+
+            dz = beta*np.tanh(alpha*(z_bar-z))
+
+            pg_velocity.plot(data.time, dz[:-1], pen=(0,0,255), name="velocity_target", stepMode=True)
+
+            pg_alpha = pg.PlotWidget()
+            self.set_plot_options(pg_alpha)
+            pg_alpha.plot(data_alpha.time, data_alpha.approach_velocity[:-1], pen=(255,0,0), name="approach_velocity", stepMode=True)
+            dock_alpha.addWidget(pg_alpha)
+            pg_alpha.setXLink(pg_depth)

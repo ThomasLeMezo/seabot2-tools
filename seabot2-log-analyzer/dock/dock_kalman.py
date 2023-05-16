@@ -65,6 +65,8 @@ class DockKalman(Seabot2Dock):
         dock_offset = Dock("Coefficient")
         self.addDock(dock_offset, position='below')
         data = self.s2b.kalman
+        data_filter = self.s2b.fusion_sensor_external
+        data_temperature = self.s2b.temperature
 
         pg_offset = pg.PlotWidget()
         self.set_plot_options(pg_offset)
@@ -72,9 +74,15 @@ class DockKalman(Seabot2Dock):
         pg_offset.setLabel('left', "offset", "g")
         dock_offset.addWidget(pg_offset)
 
+        f_pressure = interpolate.interp1d(data_filter.time, data_filter.pressure, bounds_error=False, kind="zero")
+        pressure = f_pressure(data.time)
+
+        f_temp = interpolate.interp1d(data_temperature.time, data_temperature.temperature, bounds_error=False, kind="zero")
+        temperature = f_temp(data.time)
+
         pg_volume_air = pg.PlotWidget()
         self.set_plot_options(pg_volume_air)
-        pg_volume_air.plot(data.time, data.volume_air[:-1]*1e6, pen=(0,255,0), name="volume_air", stepMode=True)
+        pg_volume_air.plot(data.time, (data.volume_air*(temperature+273.15)/((pressure+1.0)*1e5))[:-1]*1e6, pen=(0,255,0), name="volume_air", stepMode=True)
         pg_volume_air.setLabel('left', "volume air", "g")
         dock_offset.addWidget(pg_volume_air)
         pg_volume_air.setXLink(pg_offset)
@@ -141,6 +149,8 @@ class DockKalman(Seabot2Dock):
         data = self.s2b.kalman
         data_fusion = self.s2b.fusion_sensor_external
         data_mission = self.s2b.waypoint
+        data_filter = self.s2b.fusion_sensor_external
+        data_temperature = self.s2b.temperature
 
         if(not data.is_empty()):
             pg_depth = self.get_pg_depth(data, data_mission, "depth (kalman)", "set point")
@@ -154,7 +164,14 @@ class DockKalman(Seabot2Dock):
             offset = data.offset
             z = data.depth
             volume_air = data.volume_air
-            offset_total_gram = (data.offset-chi*z-chi2*np.square(z)+volume_air/(z+1.0))*1e6
+
+            f_pressure = interpolate.interp1d(data_filter.time, data_filter.pressure, bounds_error=False, kind="zero")
+            pressure = f_pressure(data.time)
+
+            f_temp = interpolate.interp1d(data_temperature.time, data_temperature.temperature, bounds_error=False, kind="zero")
+            temperature = f_temp(data.time)
+
+            offset_total_gram = (data.offset-chi*z-chi2*np.square(z)+volume_air*(temperature+273.15)/((pressure+1.0)*1e5))*1e6
 
             pg_offset_total.plot(data.time, offset_total_gram[0:-1], pen=(0,255,0), name="offset total", stepMode=True)
             pg_offset_total.setLabel('left', "offset", "g")

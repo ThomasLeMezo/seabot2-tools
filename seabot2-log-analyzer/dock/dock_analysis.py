@@ -190,16 +190,27 @@ class DockAnalysis(Seabot2Dock):
         self.addDock(dock_kalman_offset, position='below')
         data = self.s2b.kalman
         data_fusion = self.s2b.fusion_sensor_external
+        data_filter = self.s2b.fusion_sensor_external
+        data_temperature = self.s2b.temperature
 
         if(not data.is_empty()):
+
+            f_pressure = interpolate.interp1d(data_filter.time, data_filter.pressure, bounds_error=False, kind="zero")
+            pressure = f_pressure(self.sk.msg_time)
+            pressure_base = f_pressure(data.time)
+
+            f_temp = interpolate.interp1d(data_temperature.time, data_temperature.temperature, bounds_error=False, kind="zero")
+            temperature = f_temp(self.sk.msg_time)
+            temperature_base = f_temp(data.time)
+
             pg_volume_air = pg.PlotWidget()
             self.set_plot_options(pg_volume_air)
-            pg_volume_air.plot(data.time, data.volume_air[:-1]*1e6, pen=(0,255,0), name="volume_air", stepMode=True)
-            self.replay_volume_air = pg_volume_air.plot(self.sk.msg_time[:-1], self.sk.msg_volume_air[:-2]*1e6, pen=(0,0,255), name="volume_air [replay]", stepMode=True)
+            pg_volume_air.plot(data.time, (data.volume_air*(temperature_base+273.15)/((pressure_base+1.01325)*1e5))[:-1]*1e6, pen=(0,255,0), name="volume_air", stepMode=True)
+
+            self.replay_volume_air = pg_volume_air.plot(self.sk.msg_time[:-1], (self.sk.msg_volume_air*(temperature+273.15)/((pressure+1.01325)*1e5))[:-2]*1e6, pen=(0,0,255), name="volume_air [replay]", stepMode=True)
             pg_volume_air.setLabel('left', "volume air", "g")
             dock_kalman_offset.addWidget(pg_volume_air)
             
-
             pg_offset_total = pg.PlotWidget()
             self.set_plot_options(pg_offset_total)
 
@@ -214,8 +225,8 @@ class DockAnalysis(Seabot2Dock):
             r_chi2 = self.sk.msg_chi2[:-2]
             r_z = self.sk.msg_depth[:-2]
             r_offset = self.sk.msg_offset[:-2]
-            r_volume_air = self.sk.msg_volume_air[:-2]
-            r_offset_total_gram = (r_offset-r_chi*r_z-r_chi2*np.square(r_z)+r_volume_air/(r_z+1.0))*1e6
+            r_volume_air = (self.sk.msg_volume_air*(temperature+273.15)/((pressure+1.01325)*1e5))[:-2]
+            r_offset_total_gram = (r_offset-r_chi*r_z-r_chi2*np.square(r_z)+r_volume_air)*1e6
 
             pg_offset_total.plot(data.time, offset_total_gram[0:-1], pen=(0,255,0), name="offset total", stepMode=True)
             self.replay_offset_total = pg_offset_total.plot(self.sk.msg_time[:-1], r_offset_total_gram, pen=(0,0,255), name="offset total [replay]", stepMode=True)

@@ -19,6 +19,7 @@ from msg.seabot2_rosout import Seabot2RosOut
 from msg.seabot2_density import Seabot2Density
 from msg.seabot2_log_parameter import Seabot2LogParameter
 from msg.seabot2_profile import Seabot2Profile
+from msg.seabot2_alpha_debug import Seabot2AlphaDebug
 
 import datetime
 
@@ -29,6 +30,7 @@ class Seabot2Bag():
 		
 		# Control
 		self.depth_control_debug = Seabot2DepthControlDebug(bag_path, "/control/depth_control_debug", offset_date)
+		self.alpha_debug = Seabot2AlphaDebug(bag_path, "/control/alpha_debug", offset_date)
 
 		# Driver
 		self.gps_fix = Seabot2GpsFix(bag_path, "/driver/fix", offset_date)

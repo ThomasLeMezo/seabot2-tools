@@ -174,8 +174,6 @@ class DockData(Seabot2Dock):
             self.set_plot_options(pg_cells)
             pg_cells.plot(data.time, data.cell_volt0[:-1], pen=(255,0,0), name="Cell 1", stepMode=True)
             pg_cells.plot(data.time, data.cell_volt1[:-1], pen=(0,255,0), name="Cell 2", stepMode=True)
-            pg_cells.plot(data.time, data.cell_volt2[:-1], pen=(0,0,255), name="Cell 3", stepMode=True)
-            pg_cells.plot(data.time, data.cell_volt3[:-1], pen=(255,255,0), name="Cell 4", stepMode=True)
             pg_cells.setLabel('left', "V")
             dock_battery.addWidget(pg_cells)
             pg_cells.setXLink(pg_voltage)

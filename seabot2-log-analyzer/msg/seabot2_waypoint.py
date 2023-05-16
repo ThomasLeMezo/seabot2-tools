@@ -15,7 +15,6 @@ class Seabot2Waypoint(Seabot2Data):
         self.east = np.empty([self.nb_elements], dtype='double')
         self.depth = np.empty([self.nb_elements], dtype='float')
         self.limit_velocity = np.empty([self.nb_elements], dtype='float')
-        self.approach_velocity = np.empty([self.nb_elements], dtype='float')
         self.mission_enable = np.empty([self.nb_elements], dtype='bool')
         self.enable_thrusters = np.empty([self.nb_elements], dtype='bool')
         self.waypoint_id = np.empty([self.nb_elements], dtype='uint16')
@@ -33,7 +32,6 @@ class Seabot2Waypoint(Seabot2Data):
         self.east[self.k] = msg.east
         self.depth[self.k] = msg.depth
         self.limit_velocity[self.k] = msg.limit_velocity
-        self.approach_velocity[self.k] = msg.approach_velocity
         self.mission_enable[self.k] = msg.mission_enable
         self.enable_thrusters[self.k] = msg.enable_thrusters
         self.waypoint_id[self.k] = msg.waypoint_id
@@ -48,7 +46,6 @@ class Seabot2Waypoint(Seabot2Data):
         self.east = np.resize(self.east, self.k)
         self.depth = np.resize(self.depth, self.k)
         self.limit_velocity = np.resize(self.limit_velocity, self.k)
-        self.approach_velocity = np.resize(self.approach_velocity, self.k)
         self.mission_enable = np.resize(self.mission_enable, self.k)
         self.enable_thrusters = np.resize(self.enable_thrusters, self.k)
         self.waypoint_id = np.resize(self.waypoint_id, self.k)

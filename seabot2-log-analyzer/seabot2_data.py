@@ -15,7 +15,7 @@ class Seabot2Data(object):
         
         ## Determine sotrage and converter options
         self.serialization_format='cdr'
-        self.storage_options = rosbag2_py.StorageOptions(uri=self.bag_path, storage_id='sqlite3')
+        self.storage_options = rosbag2_py.StorageOptions(uri=self.bag_path) #, storage_id='sqlite3'
         self.converter_options = rosbag2_py.ConverterOptions(
             input_serialization_format=self.serialization_format,
             output_serialization_format=self.serialization_format)

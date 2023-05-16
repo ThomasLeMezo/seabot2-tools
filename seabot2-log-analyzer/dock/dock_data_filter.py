@@ -58,11 +58,13 @@ class DockDataFilter(Seabot2Dock):
             
             pg_external_pressure = pg.PlotWidget()
             self.set_plot_options(pg_external_pressure)
-            pg_external_pressure.plot(data_filter.time, data_filter.depth[:-1], pen=(255,0,0), name="depth (filter)", stepMode=True)
 
             f_pressure = interpolate.interp1d(data_external.time, data_external.pressure, bounds_error=False, kind="zero")
             pressure = f_pressure(data_filter.time)
-            pg_external_pressure.plot(data_filter.time, ((pressure-data_filter.zero_depth_pressure)/(9.81*1025.0/1e5))[:-1], pen=(0,0,255), name="depth (unfiltered)", stepMode=True)
+            
+            pg_external_pressure.plot(data_filter.time, pressure[:-1], pen=(0,0,255), name="pressure (unfiltered)", stepMode=True)
+
+            pg_external_pressure.plot(data_filter.time, (data_filter.pressure+data_filter.zero_depth_pressure)[:-1], pen=(255,0,0), name="pressure (filter + zero_depth)", stepMode=True)       
 
             pg_external_pressure.setLabel('left', "Depth", units="m")
             dock_external_sensor.addWidget(pg_external_pressure)
@@ -83,8 +85,6 @@ class DockDataFilter(Seabot2Dock):
             self.set_plot_options(pg_cells)
             pg_cells.plot(data.time, data.cell_volt0[:-1], pen=(255,0,0), name="Cell 1", stepMode=True)
             pg_cells.plot(data.time, data.cell_volt1[:-1], pen=(0,255,0), name="Cell 2", stepMode=True)
-            pg_cells.plot(data.time, data.cell_volt2[:-1], pen=(0,0,255), name="Cell 3", stepMode=True)
-            pg_cells.plot(data.time, data.cell_volt3[:-1], pen=(255,255,0), name="Cell 4", stepMode=True)
             pg_cells.setLabel('left', "V")
             dock_battery.addWidget(pg_cells)
             pg_cells.setXLink(pg_voltage)
