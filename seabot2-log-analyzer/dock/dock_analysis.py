@@ -31,6 +31,8 @@ class DockAnalysis(Seabot2Dock):
             self.sk = Seabot2ReplayKalman(self.s2b.piston_state, self.s2b.fusion_sensor_external, self.s2b.density)
             self.add_replay_kalman()
 
+        self.load_default_yaml()
+
     def add_temperature_depth(self):
         dock_temperature_depth = Dock("Temperature/Depth")
         self.addDock(dock_temperature_depth, position='below')
@@ -129,7 +131,7 @@ class DockAnalysis(Seabot2Dock):
 
 
     def add_replay_kalman_depth(self):
-        dock_kalman_state = Dock("KalmanReplay Depth")
+        dock_kalman_state = Dock("Kalman Replay Depth")
         self.addDock(dock_kalman_state, position='below')
         data = self.s2b.kalman
         data_fusion = self.s2b.fusion_sensor_external
@@ -137,20 +139,20 @@ class DockAnalysis(Seabot2Dock):
         if(not data.is_empty()):
             # pg_depth = pg.PlotWidget()
             pg_depth = self.get_pg_depth(data, data_fusion, data_name="kalman", data_mission_name="fusion")
-            self.replay_depth = pg_depth.plot(self.sk.msg_time[:-1], self.sk.msg_depth[:-2], pen=(0,0,255), name="depth [Recompute Kalman]", stepMode=True)
+            self.replay_depth = pg_depth.plot(self.sk.msg_time[:-1], self.sk.msg_depth[:-2], pen=(0,0,255), name="depth [simu]", stepMode=True)
             dock_kalman_state.addWidget(pg_depth)
 
             pg_velocity = pg.PlotWidget()
             self.set_plot_options(pg_velocity)
             pg_velocity.plot(data_fusion.time, data_fusion.velocity[:-1], pen=(0,255,0), name="velocity [Filter]", stepMode=True)
             pg_velocity.plot(data.time, data.velocity[:-1], pen=(255,0,0), name="velocity [Kalman]", stepMode=True)
-            self.replay_velocity = pg_velocity.plot(self.sk.msg_time[:-1], self.sk.msg_velocity[:-2], pen=(0,0,255), name="velocity [Recompute Kalman]", stepMode=True)
+            self.replay_velocity = pg_velocity.plot(self.sk.msg_time[:-1], self.sk.msg_velocity[:-2], pen=(0,0,255), name="velocity [simu]", stepMode=True)
             pg_velocity.setLabel('left', "Velocity", "m/s")
             dock_kalman_state.addWidget(pg_velocity)
 
             pg_offset = pg.PlotWidget()
             self.set_plot_options(pg_offset)
-            self.replay_offset = pg_offset.plot(self.sk.msg_time[:-1], self.sk.msg_offset[:-2]*1e6, pen=(0,0,255), name="offset [Recompute Kalman]", stepMode=True)
+            self.replay_offset = pg_offset.plot(self.sk.msg_time[:-1], self.sk.msg_offset[:-2]*1e6, pen=(0,0,255), name="offset [simu]", stepMode=True)
             pg_offset.setLabel('left', "Offset", "g")
             dock_kalman_state.addWidget(pg_offset)
             
@@ -158,7 +160,7 @@ class DockAnalysis(Seabot2Dock):
             pg_offset.setXLink(pg_depth)
 
     def add_replay_kalman_coefficient(self):
-        dock_kalman_coefficient = Dock("KalmanReplay Coefficients")
+        dock_kalman_coefficient = Dock("Kalman Replay Coefficients")
         self.addDock(dock_kalman_coefficient, position='below')
         data = self.s2b.kalman
         data_fusion = self.s2b.fusion_sensor_external
@@ -167,26 +169,28 @@ class DockAnalysis(Seabot2Dock):
             pg_cz = pg.PlotWidget()
             self.set_plot_options(pg_cz)
             pg_cz.plot(data.time, data.cz[:-1], pen=(0,255,0), name="cz", stepMode=True)
-            self.replay_coeff_cz = pg_cz.plot(self.sk.msg_time[:-1], self.sk.msg_cz[:-2], pen=(0,0,255), name="cz [replay]", stepMode=True)
+            self.replay_coeff_cz = pg_cz.plot(self.sk.msg_time[:-1], self.sk.msg_cz[:-2], pen=(0,0,255), name="cz [simu]", stepMode=True)
             dock_kalman_coefficient.addWidget(pg_cz)
 
             pg_chi = pg.PlotWidget()
             self.set_plot_options(pg_chi)
             pg_chi.plot(data.time, data.chi[:-1], pen=(0,255,0), name="chi", stepMode=True)
-            self.replay_coeff_chi = pg_chi.plot(self.sk.msg_time[:-1], self.sk.msg_chi[:-2], pen=(0,0,255), name="chi [replay]", stepMode=True)
+            self.replay_coeff_chi = pg_chi.plot(self.sk.msg_time[:-1], self.sk.msg_chi[:-2], pen=(0,0,255), name="chi [simu]", stepMode=True)
             dock_kalman_coefficient.addWidget(pg_chi)
             pg_chi.setXLink(pg_cz)
 
             pg_chi2 = pg.PlotWidget()
             self.set_plot_options(pg_chi2)
             pg_chi2.plot(data.time, data.chi2[:-1], pen=(0,255,0), name="chi2", stepMode=True)
-            self.replay_coeff_chi2 = pg_chi2.plot(self.sk.msg_time[:-1], self.sk.msg_chi2[:-2], pen=(0,0,255), name="chi2 [replay]", stepMode=True)
+            self.replay_coeff_chi2 = pg_chi2.plot(self.sk.msg_time[:-1], self.sk.msg_chi2[:-2], pen=(0,0,255), name="chi2 [simu]", stepMode=True)
             dock_kalman_coefficient.addWidget(pg_chi2)
             pg_chi2.setXLink(pg_cz)
             
+    def conv_V_air(self, data):
+        return data*(288.15/101325.0)*1e6
 
     def add_replay_kalman_offset(self):
-        dock_kalman_offset = Dock("KalmanReplay Offsets")
+        dock_kalman_offset = Dock("Kalman Replay Offsets")
         self.addDock(dock_kalman_offset, position='below')
         data = self.s2b.kalman
         data_fusion = self.s2b.fusion_sensor_external
@@ -194,42 +198,18 @@ class DockAnalysis(Seabot2Dock):
         data_temperature = self.s2b.temperature
 
         if(not data.is_empty()):
-
-            f_pressure = interpolate.interp1d(data_filter.time, data_filter.pressure, bounds_error=False, kind="zero")
-            pressure = f_pressure(self.sk.msg_time)
-            pressure_base = f_pressure(data.time)
-
-            f_temp = interpolate.interp1d(data_temperature.time, data_temperature.temperature, bounds_error=False, kind="zero")
-            temperature = f_temp(self.sk.msg_time)
-            temperature_base = f_temp(data.time)
-
             pg_volume_air = pg.PlotWidget()
             self.set_plot_options(pg_volume_air)
-            pg_volume_air.plot(data.time, (data.volume_air*(temperature_base+273.15)/((pressure_base+1.01325)*1e5))[:-1]*1e6, pen=(0,255,0), name="volume_air", stepMode=True)
+            pg_volume_air.plot(data.time, self.conv_V_air(data.volume_air)[:-1], pen=(0,255,0), name="volume_air (eq 1bar, 15°) [real]", stepMode=True)
+            self.replay_volume_air = pg_volume_air.plot(self.sk.msg_time[:-1], self.conv_V_air(self.sk.msg_volume_air)[:-2], pen=(0,0,255), name="volume_air (eq 1bar, 15°) [simu]", stepMode=True)
 
-            self.replay_volume_air = pg_volume_air.plot(self.sk.msg_time[:-1], (self.sk.msg_volume_air*(temperature+273.15)/((pressure+1.01325)*1e5))[:-2]*1e6, pen=(0,0,255), name="volume_air [replay]", stepMode=True)
-            pg_volume_air.setLabel('left', "volume air", "g")
+            pg_volume_air.setLabel('left', "volume air", "mL")
             dock_kalman_offset.addWidget(pg_volume_air)
             
             pg_offset_total = pg.PlotWidget()
             self.set_plot_options(pg_offset_total)
-
-            chi = data.chi
-            chi2 = data.chi2
-            offset = data.offset
-            z = data.depth
-            volume_air = data.volume_air
-            offset_total_gram = data.offset_total
-
-            r_chi = self.sk.msg_chi[:-2]
-            r_chi2 = self.sk.msg_chi2[:-2]
-            r_z = self.sk.msg_depth[:-2]
-            r_offset = self.sk.msg_offset[:-2]
-            r_volume_air = (self.sk.msg_volume_air*(temperature+273.15)/((pressure+1.01325)*1e5))[:-2]
-            r_offset_total_gram = (r_offset-r_chi*r_z-r_chi2*np.square(r_z)+r_volume_air)*1e6
-
-            pg_offset_total.plot(data.time, offset_total_gram[0:-1], pen=(0,255,0), name="offset total", stepMode=True)
-            self.replay_offset_total = pg_offset_total.plot(self.sk.msg_time[:-1], r_offset_total_gram, pen=(0,0,255), name="offset total [replay]", stepMode=True)
+            pg_offset_total.plot(data.time, data.offset_total[:-1]*1e6, pen=(0,255,0), name="offset total [real]", stepMode=True)
+            self.replay_offset_total = pg_offset_total.plot(self.sk.msg_time[:-1], self.sk.msg_offset_total[:-2]*1e6, pen=(0,0,255), name="offset total [simu]", stepMode=True)
             pg_offset_total.setLabel('left', "offset", "g")
             dock_kalman_offset.addWidget(pg_offset_total)
             pg_offset_total.setXLink(pg_volume_air)
@@ -238,18 +218,12 @@ class DockAnalysis(Seabot2Dock):
         self.replay_depth.setData(self.sk.msg_time[:-1], self.sk.msg_depth[:-2])
         self.replay_velocity.setData(self.sk.msg_time[:-1], self.sk.msg_velocity[:-2])
         self.replay_offset.setData(self.sk.msg_time[:-1], self.sk.msg_offset[:-2]*1e6)
-        self.replay_volume_air.setData(self.sk.msg_time[:-1], self.sk.msg_volume_air[:-2]*1e6)
+        self.replay_volume_air.setData(self.sk.msg_time[:-1], self.conv_V_air(self.sk.msg_volume_air)[:-2])
         self.replay_coeff_cz.setData(self.sk.msg_time[:-1], self.sk.msg_cz[:-2])
         self.replay_coeff_chi.setData(self.sk.msg_time[:-1], self.sk.msg_chi[:-2])
         self.replay_coeff_chi2.setData(self.sk.msg_time[:-1], self.sk.msg_chi2[:-2])
 
-        r_chi = self.sk.msg_chi[:-2]
-        r_chi2 = self.sk.msg_chi2[:-2]
-        r_z = self.sk.msg_depth[:-2]
-        r_offset = self.sk.msg_offset[:-2]
-        r_volume_air = self.sk.msg_volume_air[:-2]
-        r_offset_total_gram = (r_offset-r_chi*r_z-r_chi2*np.square(r_z)+r_volume_air/(r_z+1.0))*1e6
-        self.replay_offset_total.setData(self.sk.msg_time[:-1], r_offset_total_gram)
+        self.replay_offset_total.setData(self.sk.msg_time[:-1], self.sk.msg_offset_total[:-2]*1e6)
 
 
     def call_compute_kalman(self):
@@ -404,11 +378,8 @@ class DockAnalysis(Seabot2Dock):
             self.sk.enable_volume_air_ = (True if val ==1 else False)
 
 
-    def open_yaml(self):
-
-        fileName = QtGui.QFileDialog.getOpenFileNames(self,caption='Param files',directory=os.path.expanduser('~/seabot2/seabot2-ros/src/seabot2/config/'),filter="*.yaml")
-        print(fileName)
-        for file in fileName[0]:
+    def process_yaml(self,files):
+        for file in files:
             with open(file, "r") as stream:
                 try:
                     data = yaml.safe_load(stream)
@@ -423,6 +394,26 @@ class DockAnalysis(Seabot2Dock):
 
                 except yaml.YAMLError as exc:
                     print(exc)
+
+    def open_yaml(self):
+
+        fileName = QtGui.QFileDialog.getOpenFileNames(self,caption='Param files',directory=os.path.expanduser('~/seabot2/seabot2-ros/src/seabot2/config/'),filter="*.yaml")
+        print(fileName)
+        self.process_yaml(fileName[0])
+
+    def load_default_yaml(self):
+
+        default_directory = os.path.expanduser("~/seabot2/seabot2-ros/src/seabot2/config/default/")
+        if os.path.exists(default_directory):
+            files=[]
+            files.append(default_directory+"safety.yaml")
+            files.append(default_directory + "physics.yaml")
+            files.append(default_directory + "observer.yaml")
+            files.append(default_directory + "mission.yaml")
+            files.append(default_directory + "driver.yaml")
+            files.append(default_directory + "control.yaml")
+            self.process_yaml(files)
+            print("Load defaut config yaml")
 
     # https://stackoverflow.com/questions/14962485/finding-a-key-recursively-in-a-dictionary
     def _finditem(self, obj, key):

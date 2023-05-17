@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-DIRECTORY=`pwd`
+DIRECTORY=~/seabot2/seabot2-ros/src/seabot2/mission/
 FILE=$DIRECTORY/$1
 SEABOT=$2
 
