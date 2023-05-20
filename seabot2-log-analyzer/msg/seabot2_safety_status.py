@@ -21,6 +21,9 @@ class Seabot2SafetyStatus(Seabot2Data):
         self.zero_depth = np.empty([self.nb_elements], dtype='bool')
         self.cpu = np.empty([self.nb_elements], dtype='float')
         self.ram = np.empty([self.nb_elements], dtype='float')
+        self.bathy = np.empty([self.nb_elements], dtype='float')
+        self.limit_depth = np.empty([self.nb_elements], dtype='float')
+        self.gnss_fix_once = np.empty([self.nb_elements], dtype='bool')
 
         self.load_message()
         self.resize_data_array()
@@ -38,6 +41,9 @@ class Seabot2SafetyStatus(Seabot2Data):
         self.zero_depth[self.k] = msg.zero_depth
         self.cpu[self.k] = msg.cpu
         self.ram[self.k] = msg.ram
+        self.bathy[self.k] = msg.bathy
+        self.limit_depth[self.k] = msg.limit_depth
+        self.gnss_fix_once[self.k] = msg.gnss_fix_once
         return
 
     def resize_data_array(self):
@@ -52,4 +58,7 @@ class Seabot2SafetyStatus(Seabot2Data):
         self.zero_depth = np.resize(self.zero_depth, self.k)
         self.cpu = np.resize(self.cpu, self.k)
         self.ram = np.resize(self.ram, self.k)
+        self.bathy = np.resize(self.bathy, self.k)
+        self.limit_depth = np.resize(self.limit_depth, self.k)
+        self.gnss_fix_once = np.resize(self.gnss_fix_once, self.k)
         return

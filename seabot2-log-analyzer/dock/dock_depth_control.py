@@ -41,8 +41,9 @@ class DockDepthControl(Seabot2Dock):
         pg_regulation_state.setLabel('left', "mode")
 
         tab = np.array(data_control.mode)
-        for i in np.where(tab[:-1] != tab[1:])[0]:
-            self.text_write_plot(pg_regulation_state, data_control.time[i+1], tab[i+1], self.regulation_state[tab[i+1]])
+        if(sum(np.where(tab[:-1] != tab[1:])[0])<1000):
+            for i in np.where(tab[:-1] != tab[1:])[0]:
+                self.text_write_plot(pg_regulation_state, data_control.time[i+1], tab[i+1], self.regulation_state[tab[i+1]])
         return pg_regulation_state
 
     def add_depth(self):
@@ -52,6 +53,7 @@ class DockDepthControl(Seabot2Dock):
         data = self.s2b.fusion_sensor_external
         data_mission = self.s2b.waypoint
         data_alpha = self.s2b.alpha_debug
+        data_simulation = self.s2b.simulation_debug
 
         if(not data.is_empty() and not data_mission.is_empty()):
             pg_depth = self.get_pg_depth(data, data_kalman, "depth (filter)", "depth (kalman)")
@@ -83,6 +85,9 @@ class DockDepthControl(Seabot2Dock):
             dz = beta*np.tanh(alpha*(z_bar-z))
 
             pg_velocity.plot(data.time, dz[:-1], pen=(0,0,255), name="velocity_target", stepMode=True)
+
+            if(not data_simulation.is_empty()):
+                pg_depth.plot(data_simulation.time, data_simulation.z[:-1], pen=(255,0,255), name="depth [simu]", stepMode=True)
 
     def add_depth_acc(self):
         dock_depth_acc = Dock("Acceleration")

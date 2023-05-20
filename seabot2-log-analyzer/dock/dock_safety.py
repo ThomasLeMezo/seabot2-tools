@@ -82,9 +82,9 @@ class DockSafety(Seabot2Dock):
             pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0,255,0), name="depth (target)", stepMode=True)
             dock_kalman_state.addWidget(pg_depth)
 
-            pg_depth_limit = pg.PlotWidget()
-            self.set_plot_options(pg_depth_limit)
-            pg_depth_limit.plot(data_safety.time, data_safety.depth_limit[:-1], pen=(255,0,0), name="depth limit", stepMode=True)
+            pg_limit_depth = pg.PlotWidget()
+            self.set_plot_options(pg_limit_depth)
+            pg_limit_depth.plot(data_safety.time, data_safety.limit_depth[:-1], pen=(255,0,0), name="limit depth", stepMode=True)
 
-            dock_kalman_state.addWidget(pg_depth_limit)
-            pg_depth_limit.setXLink(pg_depth)
+            dock_kalman_state.addWidget(pg_limit_depth)
+            pg_limit_depth.setXLink(pg_depth)

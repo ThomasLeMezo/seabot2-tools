@@ -20,6 +20,7 @@ from msg.seabot2_density import Seabot2Density
 from msg.seabot2_log_parameter import Seabot2LogParameter
 from msg.seabot2_profile import Seabot2Profile
 from msg.seabot2_alpha_debug import Seabot2AlphaDebug
+from msg.seabot2_simulation_debug import Seabot2SimulationDebug
 
 import datetime
 
@@ -64,4 +65,7 @@ class Seabot2Bag():
 		# Info
 		self.rosout = Seabot2RosOut(bag_path, "/rosout", offset_date)
 		self.log_parameter = Seabot2LogParameter(bag_path, "/observer/parameters", offset_date)
+
+		# Simulation
+		self.simulation_debug = Seabot2SimulationDebug(bag_path, "/simulation/debug", offset_date)
 		

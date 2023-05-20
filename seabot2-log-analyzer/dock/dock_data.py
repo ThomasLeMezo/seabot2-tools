@@ -57,11 +57,13 @@ class DockData(Seabot2Dock):
 
         data = self.s2b.sensor_external
         data_fusion = self.s2b.fusion_sensor_external
+        
         if(not data.is_empty()):
             
             pg_external_pressure = pg.PlotWidget()
             self.set_plot_options(pg_external_pressure)
             pg_external_pressure.plot(data.time, data.pressure[:-1], pen=(255,0,0), name="pressure", stepMode=True)
+            pg_external_pressure.setLabel('left', "Pressure", units="bar")
 
             if(not data_fusion.is_empty()):
                 pg_external_pressure.plot(data_fusion.time, data_fusion.zero_depth_pressure[:-1], pen=(255,255,0), name="zero pressure", stepMode=True)
