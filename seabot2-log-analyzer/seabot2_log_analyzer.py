@@ -57,6 +57,8 @@ dock_profile = DockPing1D(s2b, tab)
 data_simulation = DockSimulation(s2b, tab)
 data_gnss = DockGnss(s2b, tab, win)
 
+tab.setCurrentWidget(dock_depth_control)
+
 win.show()
 
 ## Start Qt event loop unless running in interactive mode or using pyside.

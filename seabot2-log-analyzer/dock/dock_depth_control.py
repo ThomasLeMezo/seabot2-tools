@@ -28,10 +28,12 @@ class DockDepthControl(Seabot2Dock):
         self.add_depth()
         self.add_depth_acc()
         self.add_mode()
-        self.add_control()
+        dock_control = self.add_control()
         self.add_control2()
         self.add_piston_set_point()
         self.add_alpha()
+
+        dock_control.raiseDock()
         
 
     def plot_regulation_state(self, data_control):
@@ -87,6 +89,7 @@ class DockDepthControl(Seabot2Dock):
 
             if(not data_simulation.is_empty()):
                 pg_depth.plot(data_simulation.time, data_simulation.z[:-1], pen=(255,0,255), name="depth [simu]", stepMode=True)
+        return dock_depth
 
     def add_depth_acc(self):
         dock_depth_acc = Dock("Acceleration")
@@ -180,6 +183,7 @@ class DockDepthControl(Seabot2Dock):
             pg_control_set_point.plot(data_control.time, -data_control.piston_set_point[:-1]*self.tick_to_gram, pen=(0,255,0), name="set_point (control) (in g)", stepMode=True)
             dock_control.addWidget(pg_control_set_point)
             pg_control_set_point.setXLink(pg_depth)
+        return dock_control
 
 
     def add_control2(self):
