@@ -152,6 +152,8 @@ class DockKalman(Seabot2Dock):
         data_filter = self.s2b.fusion_sensor_external
         data_temperature = self.s2b.temperature
 
+        data_simulation = self.s2b.simulation_debug
+
         if(not data.is_empty()):
             pg_depth = self.get_pg_depth(data, data_mission, "depth (kalman)", "set point")
             dock_offset_total.addWidget(pg_depth)
@@ -177,6 +179,10 @@ class DockKalman(Seabot2Dock):
             pg_offset_total.setLabel('left', "offset", "g")
             dock_offset_total.addWidget(pg_offset_total)
             pg_offset_total.setXLink(pg_depth)
+
+            if(not data_simulation.is_empty()):
+                pg_offset_total.plot(data_simulation.time, ((data_simulation.volume_total-data_simulation.piston_volume)*1e6)[:-1], pen=(255,0,0), name="offset total [simu]", stepMode=True)
+
 
     def add_compressibility(self):
         dock_compressibility = Dock("Compressibility")

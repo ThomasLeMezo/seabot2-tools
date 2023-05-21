@@ -41,9 +41,8 @@ class DockDepthControl(Seabot2Dock):
         pg_regulation_state.setLabel('left', "mode")
 
         tab = np.array(data_control.mode)
-        if(sum(np.where(tab[:-1] != tab[1:])[0])<1000):
-            for i in np.where(tab[:-1] != tab[1:])[0]:
-                self.text_write_plot(pg_regulation_state, data_control.time[i+1], tab[i+1], self.regulation_state[tab[i+1]])
+        for i in np.where(tab[:-1] != tab[1:])[0]:
+            self.text_write_plot(pg_regulation_state, data_control.time[i+1], tab[i+1], self.regulation_state[tab[i+1]])
         return pg_regulation_state
 
     def add_depth(self):
