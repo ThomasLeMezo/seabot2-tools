@@ -26,6 +26,7 @@ class Seabot2Data(object):
 
         self.time = np.empty([self.nb_elements])
         self.k=0
+        print("Load ", topic_name)
         
     def is_empty(self):
         if(self.k==0):

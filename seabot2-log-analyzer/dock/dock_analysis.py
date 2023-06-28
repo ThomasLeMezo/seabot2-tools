@@ -10,6 +10,7 @@ import numpy as np
 from scipy import signal, interpolate
 import yaml
 import os
+from PyQt5.QtCore import QTime, QTimer
 
 import sys
 sys.path.append("..")
@@ -34,24 +35,83 @@ class DockAnalysis(Seabot2Dock):
         self.load_default_yaml()
 
     def add_temperature_depth(self):
+
         dock_temperature_depth = Dock("Temperature/Depth")
         self.addDock(dock_temperature_depth, position='below')
-
+        data_kalman = self.s2b.kalman
+        data_depth = self.s2b.fusion_sensor_external
+        data_mission = self.s2b.waypoint
+        data_safety = self.s2b.safety
         data_temp = self.s2b.temperature
-        if(not data_temp.is_empty()):
-            
-            data_depth = self.s2b.fusion_sensor_external
+        data_depth = self.s2b.fusion_sensor_external
 
+        if(not data_temp.is_empty()):
             f_temp = interpolate.interp1d(data_temp.time, data_temp.temperature, bounds_error=False, kind="zero")
-            temp_interp = f_temp(data_depth.time)
+            self.temperature = f_temp(data_kalman.time)
             
-            pg_temperature_temperature = pg.PlotWidget()
-            self.set_plot_options(pg_temperature_temperature)
-            pg_temperature_temperature.plot(temp_interp, data_depth.depth[:-1], pen=(0,255,0), name="Temperature", stepMode=True)
-            pg_temperature_temperature.setLabel('bottom', "Temperature", "°C")
-            pg_temperature_temperature.setLabel('left', "Depth", "m")
-            pg_temperature_temperature.getViewBox().invertY(True)
-            dock_temperature_depth.addWidget(pg_temperature_temperature)
+            pg_temperature_depth = pg.PlotWidget()
+            self.set_plot_options(pg_temperature_depth)
+            cm = pg.colormap.get('summer', source='matplotlib') # prepare a linear color map
+            pen = cm.getPen( span=(0.0, 1.0) ) # gradient from blue (y=0) to white (y=1)
+
+            self.plot_td = pg_temperature_depth.plot(self.temperature, data_kalman.depth[:-1], pen=pen, name="Temperature", stepMode=True)
+            pg_temperature_depth.disableAutoRange()
+            pg_temperature_depth.setLabel('bottom', "Temperature", "°C")
+            pg_temperature_depth.setLabel('left', "Depth", "m")
+            pg_temperature_depth.getViewBox().invertY(True)
+            dock_temperature_depth.addWidget(pg_temperature_depth)
+
+            pg_depth = self.get_pg_depth(data_kalman, None, "depth (kalman)")
+            pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0,255,0), name="depth (target)", stepMode=True)
+            dock_temperature_depth.addWidget(pg_depth)
+
+            self.lr_time = pg.LinearRegionItem([0, data_kalman.time[-1]], bounds=[0,data_kalman.time[-1]], movable=True)
+            self.lr_time.setZValue(10)
+            self.t_bounds_old = self.lr_time.getRegion()
+            pg_depth.addItem(self.lr_time)
+
+            if(self.lr_time != None):
+                self.timer_td = pg.QtCore.QTimer()
+                self.timer_td.timeout.connect(self.update_plot_td)
+                self.timer_td.start(50)
+                self.scrolling_button_td = QtGui.QPushButton('Scrolling')
+                self.scrolling_button_td.setCheckable(True)
+                dock_temperature_depth.addWidget(self.scrolling_button_td, row=3, col=0)
+                self.scrolling_t = 0
+
+    def update_plot_td(self):
+        data_kalman = self.s2b.kalman
+        t_bounds = self.lr_time.getRegion()
+        t_bounds_diam = abs(t_bounds[1] - t_bounds[0])
+
+        if(t_bounds != self.t_bounds_old or self.scrolling_button_td.isChecked()):
+            self.t_bounds_old = t_bounds
+            ub = np.where(data_kalman.time <= np.max((1,t_bounds[1])))[0][-1]
+            lb = np.where(data_kalman.time >= np.min((data_kalman.time[-1],t_bounds[0])))[0][0]
+
+            if self.scrolling_button_td.isChecked() and t_bounds == self.t_bounds_old:
+                self.scrolling_t +=10
+                ub += self.scrolling_t
+                lb += self.scrolling_t
+                if (lb + t_bounds_diam) > np.size(data_kalman.time):
+                    lb = 0
+                    ub = t_bounds_diam
+                    self.scrolling_t = 0
+            else:
+                self.scrolling_t = 0
+
+
+            ub = np.min((ub, np.size(data_kalman.time)-1)) # set limit
+            lb = np.max((lb,0)) # set limit
+
+            self.lr_time.setRegion((data_kalman.time[lb], data_kalman.time[ub]))
+
+            X = self.temperature[lb:ub]
+            Y = data_kalman.depth[lb+1:ub]
+            
+            # X = X[~np.isnan(X)]
+            # Y = Y[~np.isnan(Y)]
+            self.plot_td.setData(X,Y)
 
     def add_temperature_profile(self):
         dock_temperature_depth = Dock("Temperature Profile")

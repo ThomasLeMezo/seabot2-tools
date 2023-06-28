@@ -30,6 +30,7 @@ class Seabot2GpsFix(Seabot2Data):
         self.err_track = np.empty([self.nb_elements], dtype='double')
         self.err_speed = np.empty([self.nb_elements], dtype='double')
         self.err_time = np.empty([self.nb_elements], dtype='double')
+        self.satellites_visible = np.empty([self.nb_elements], dtype='int32')
 
         self.load_message()
         self.resize_data_array()
@@ -56,6 +57,7 @@ class Seabot2GpsFix(Seabot2Data):
         self.err_track[self.k] = msg.err_track
         self.err_speed[self.k] = msg.err_speed
         self.err_time[self.k] = msg.err_time
+        self.satellites_visible[self.k] = msg.satellites_visible
         return
 
     def resize_data_array(self):
@@ -79,4 +81,5 @@ class Seabot2GpsFix(Seabot2Data):
         self.err_track = np.resize(self.err_track, self.k)
         self.err_speed = np.resize(self.err_speed, self.k)
         self.err_time = np.resize(self.err_time, self.k)
+        self.satellites_visible = np.resize(self.err_time, self.k)
         return

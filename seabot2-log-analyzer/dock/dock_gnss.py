@@ -110,6 +110,12 @@ class DockGnss(Seabot2Dock):
             dock_fix.addWidget(pg_mode)
             pg_mode.setXLink(pg_depth)
 
+            pg_nb_sat = pg.PlotWidget()
+            pg_nb_sat.plot(data.time, data.satellites_visible[:-1], pen=(255,0,0), name="satellites_visible", stepMode=True)
+            pg_nb_sat.setLabel('left', "satellites visible")
+            dock_fix.addWidget(pg_nb_sat)
+            pg_nb_sat.setXLink(pg_depth)
+
     def add_time(self):
         dock_time = Dock("Time")
         self.addDock(dock_time, position='below')
@@ -129,7 +135,7 @@ class DockGnss(Seabot2Dock):
 
             pg_mission_time = pg.PlotWidget()
             pg_mission_time.plot(data_mission.time, np.arange(np.size(data_mission.time)-1), pen=(255,0,0), name="time of mission message", stepMode=True)
-            pg_mission_time.setLabel('left', "time to next wp")
+            pg_mission_time.setLabel('left', "time of mission message")
             dock_time.addWidget(pg_mission_time)
             pg_mission_time.setXLink(pg_depth)
             

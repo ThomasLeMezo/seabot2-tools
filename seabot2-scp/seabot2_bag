@@ -6,7 +6,7 @@ USER=pi
 IP=192.168.0.10
 
 # Ask for bags in ~/log and sort by time
-FILES=($(ssh $USER@$IP$SEABOT ls -lt /home/$USER/log))
+FILES=($(ssh $USER@$IP$SEABOT ls -t /home/$USER/log))
 
 # Display bags and ask user to choose one
 COUNTER=0

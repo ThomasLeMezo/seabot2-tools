@@ -32,16 +32,16 @@ class DockSafety(Seabot2Dock):
 
             pg_global_safety = pg.PlotWidget()
             self.set_plot_options(pg_global_safety)
-            pg_global_safety.plot(data_safety.time, data_safety.global_safety_valid[:-1], pen=(255,0,0), name="global safety", stepMode=True)
+            pg_global_safety.plot(data_safety.time, data_safety.global_safety_valid[:-1]*0.5, pen=(255,0,0), name="global safety", stepMode=True)
 
-            pg_global_safety.plot(data_safety.time, data_safety.published_frequency[:-1], pen=(0,255,0), name="published_frequency", stepMode=True)
-            pg_global_safety.plot(data_safety.time, data_safety.depth_limit[:-1], pen=(0,0,255), name="depth_limit", stepMode=True)
-            pg_global_safety.plot(data_safety.time, data_safety.batteries_limit[:-1], pen=(255,255,0), name="batteries_limit", stepMode=True)
-            pg_global_safety.plot(data_safety.time, data_safety.depressurization[:-1], pen=(255,0,255), name="depressurization", stepMode=True)
-            pg_global_safety.plot(data_safety.time, data_safety.seafloor[:-1], pen=(0,255,255), name="seafloor", stepMode=True)
-            pg_global_safety.plot(data_safety.time, data_safety.piston[:-1], pen=(255,255,255), name="piston", stepMode=True)
-            pg_global_safety.plot(data_safety.time, data_safety.zero_depth[:-1], pen=(128,0,255), name="zero_depth", stepMode=True)
-
+            pg_global_safety.plot(data_safety.time, data_safety.published_frequency[:-1]*0.5+1, pen=(0,255,0), name="published_frequency", stepMode=True)
+            pg_global_safety.plot(data_safety.time, data_safety.depth_limit[:-1]*0.5+2, pen=(0,0,255), name="depth_limit", stepMode=True)
+            pg_global_safety.plot(data_safety.time, data_safety.batteries_limit[:-1]*0.5+3, pen=(255,255,0), name="batteries_limit", stepMode=True)
+            pg_global_safety.plot(data_safety.time, data_safety.depressurization[:-1]*0.5+4, pen=(255,0,255), name="depressurization", stepMode=True)
+            pg_global_safety.plot(data_safety.time, data_safety.seafloor[:-1]*0.5+5, pen=(0,255,255), name="seafloor", stepMode=True)
+            pg_global_safety.plot(data_safety.time, data_safety.piston[:-1]*0.5+6, pen=(255,255,255), name="piston", stepMode=True)
+            pg_global_safety.plot(data_safety.time, data_safety.zero_depth[:-1]*0.5+7, pen=(128,0,255), name="zero_depth", stepMode=True)
+            pg_global_safety.plot(data_safety.time, data_safety.gnss_fix_once[:-1]*0.5+8, pen=(128,128,255), name="gnss_fix_once", stepMode=True)
 
             dock_kalman_state.addWidget(pg_global_safety)
             pg_global_safety.setXLink(pg_depth)
