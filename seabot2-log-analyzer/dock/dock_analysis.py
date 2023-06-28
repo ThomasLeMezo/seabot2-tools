@@ -272,9 +272,10 @@ class DockAnalysis(Seabot2Dock):
 
             f_density = interpolate.interp1d(data_density.time, data_density.density, bounds_error=False, kind="zero")
             density = f_density(data_piston.time)
-            delta_volume = ((1000.0-density)*12e-3)*1e3 # in g
+            delta_volume = ((density-density[np.nanargmin(density)])*12e-3)*1e3 # in g
 
-            pg_control_set_point.plot(data_piston.time, -data_piston.position[:-1]*self.tick_to_gram+delta_volume[:-1],pen=(0,255,0), name="position density correction", stepMode=True)
+            pg_control_set_point.plot(data_piston.time, -data_piston.position[:-1]*self.tick_to_gram+delta_volume[:-1],pen=(0,255,0), name="position density correction (+)", stepMode=True)
+            pg_control_set_point.plot(data_piston.time, -data_piston.position[:-1]*self.tick_to_gram-delta_volume[:-1],pen=(0,0,255), name="position density correction (-)", stepMode=True)
 
             dock_control.addWidget(pg_control_set_point)
             pg_control_set_point.setXLink(pg_depth)

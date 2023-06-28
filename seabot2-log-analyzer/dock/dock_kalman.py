@@ -151,6 +151,7 @@ class DockKalman(Seabot2Dock):
         data_mission = self.s2b.waypoint
         data_filter = self.s2b.fusion_sensor_external
         data_temperature = self.s2b.temperature
+        data_density = self.s2b.density
 
         data_simulation = self.s2b.simulation_debug
 
@@ -173,14 +174,21 @@ class DockKalman(Seabot2Dock):
             f_temp = interpolate.interp1d(data_temperature.time, data_temperature.temperature, bounds_error=False, kind="zero")
             temperature = f_temp(data.time)
 
-            offset_total_gram = (data.offset-chi*z-chi2*np.square(z)+volume_air*(temperature+273.15)/((pressure+1.0)*1e5))*1e6
+            f_density = interpolate.interp1d(data_density.time, data_density.density, bounds_error=False, kind="zero")
+            density = f_density(data.time)
+            print(density, data_density.density)
 
-            pg_offset_total.plot(data.time, offset_total_gram[0:-1], pen=(0,255,0), name="offset total", stepMode=True)
+            offset_total = (data.offset-chi*z-chi2*np.square(z)+volume_air*(temperature+273.15)/((pressure+1.0)*1e5))*1e6
+            offset_total_density = ((density-density[np.nanargmin(density)])*12.) + offset_total # in g
+
+            pg_offset_total.plot(data.time, offset_total[:-1], pen=(0,255,0), name="offset total", stepMode=True)
+            pg_offset_total.plot(data.time, offset_total_density[:-1], pen=(0,0,255), name="offset total (density corrected)", stepMode=True)
+
             pg_offset_total.setLabel('left', "offset", "g")
             dock_offset_total.addWidget(pg_offset_total)
             pg_offset_total.setXLink(pg_depth)
 
-            if(not data_simulation.is_empty()):
+            if not data_simulation.is_empty():
                 pg_offset_total.plot(data_simulation.time, ((data_simulation.volume_total-data_simulation.piston_volume)*1e6)[:-1], pen=(255,0,0), name="offset total [simu]", stepMode=True)
 
 
