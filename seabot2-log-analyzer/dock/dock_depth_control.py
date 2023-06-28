@@ -56,7 +56,7 @@ class DockDepthControl(Seabot2Dock):
         data_alpha = self.s2b.alpha_debug
         data_simulation = self.s2b.simulation_debug
 
-        if(not data.is_empty() and not data_mission.is_empty()):
+        if not data.is_empty() and not data_mission.is_empty():
             pg_depth = self.get_pg_depth(data, data_kalman, "depth (filter)", "depth (kalman)")
             pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0,0,255), name="depth [target]", stepMode=True)
             dock_depth.addWidget(pg_depth)

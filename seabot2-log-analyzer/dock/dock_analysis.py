@@ -24,6 +24,7 @@ class DockAnalysis(Seabot2Dock):
         self.add_temperature_depth()
         self.add_temperature_profile()
         self.add_piston_depth()
+        self.add_piston()
 
         self.first_time_replay = True
 
@@ -248,6 +249,36 @@ class DockAnalysis(Seabot2Dock):
             
     def conv_V_air(self, data):
         return data*(288.15/101325.0)*1e6
+
+    def add_piston(self):
+        dock_control = Dock("Piston")
+        self.addDock(dock_control, position='below')
+        data_kalman = self.s2b.kalman
+        data = self.s2b.fusion_sensor_external
+        data_control = self.s2b.depth_control_debug
+        data_mission = self.s2b.waypoint
+        data_piston = self.s2b.piston_state
+        data_density = self.s2b.density
+
+        if(not data.is_empty()):
+            pg_depth = self.get_pg_depth(data, data_mission)
+            pg_depth.plot(data_kalman.time, data_kalman.depth[:-1], pen=(0,0,255), name="depth [kalman]", stepMode=True)
+            dock_control.addWidget(pg_depth)
+            self.add_label_time(pg_depth, data.starting_time)
+
+            pg_control_set_point = pg.PlotWidget()
+            self.set_plot_options(pg_control_set_point)
+            pg_control_set_point.plot(data_piston.time, -data_piston.position[:-1]*self.tick_to_gram,pen=(255,0,0), name="position (in g)", stepMode=True)
+
+            f_density = interpolate.interp1d(data_density.time, data_density.density, bounds_error=False, kind="zero")
+            density = f_density(data_piston.time)
+            delta_volume = ((1000.0-density)*12e-3)*1e3 # in g
+
+            pg_control_set_point.plot(data_piston.time, -data_piston.position[:-1]*self.tick_to_gram+delta_volume[:-1],pen=(0,255,0), name="position density correction", stepMode=True)
+
+            dock_control.addWidget(pg_control_set_point)
+            pg_control_set_point.setXLink(pg_depth)
+        return dock_control
 
     def add_replay_kalman_offset(self):
         dock_kalman_offset = Dock("Kalman Replay Offsets")

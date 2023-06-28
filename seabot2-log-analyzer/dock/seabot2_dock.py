@@ -11,6 +11,7 @@ import datetime
 class Seabot2Dock(DockArea):
     def __init__(self, seabot2_bag):
         DockArea.__init__(self)
+        self.proxy = []
         self.s2b = seabot2_bag
         screw_thread =  1.e-3
         self.tick_per_turn =  2048*4
@@ -52,7 +53,7 @@ class Seabot2Dock(DockArea):
         pg_depth = pg.PlotWidget()
         self.set_plot_options(pg_depth)
         pg_depth.plot(depth_data.time, depth_data.depth[:-1], pen=(255,0,0), name=data_name, stepMode=True)
-        if(mission_data!= None and np.size(mission_data.time)>0):
+        if mission_data is not None and np.size(mission_data.time)>0:
             pg_depth.plot(mission_data.time, mission_data.depth[:-1], pen=(0,255,0), name=data_mission_name, stepMode=True)
         pg_depth.setLabel('left', "Depth", units="m")
         pg_depth.showGrid(y=True)
@@ -61,22 +62,24 @@ class Seabot2Dock(DockArea):
         return pg_depth
 
     def add_label_time(self, p1, starting_time):
-        vLine = pg.InfiniteLine(angle=90, movable=False)
-        p1.addItem(vLine, ignoreBounds=True)
+        v_line = pg.InfiniteLine(angle=90, movable=False)
+        p1.addItem(v_line, ignoreBounds=True)
 
         if p1.plotItem.legend is None:
             self.set_plot_options(p1)
         p1.plotItem.legend.addItem(p1.plotItem.items[0], "time")
         #label.setText("<span style='font-size: 12pt'>x=%0.1f" % 0)
 
-        def mouseMoved(evt):
+        def mouse_moved(evt):
             pos = evt[0]  ## using signal proxy turns original arguments into a tuple
             if p1.sceneBoundingRect().contains(pos):
-                mousePoint = p1.getViewBox().mapSceneToView(pos)
-                t = starting_time + datetime.timedelta(seconds = mousePoint.x()) 
+                mouse_point = p1.getViewBox().mapSceneToView(pos)
+                t = starting_time + datetime.timedelta(seconds = mouse_point.x())
                 ts_string = t.strftime("%Y-%m-%d %H:%M:%S")
 
                 p1.plotItem.legend.items[-1][1].setText(ts_string)
-                vLine.setPos(mousePoint.x())
+                v_line.setPos(mouse_point.x())
 
-        self.proxy = pg.SignalProxy(p1.scene().sigMouseMoved, rateLimit=60, slot=mouseMoved)
+        self.proxy.append(pg.SignalProxy(p1.scene().sigMouseMoved, rateLimit=60, slot=mouse_moved))
+
+
