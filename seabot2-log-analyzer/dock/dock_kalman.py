@@ -179,10 +179,12 @@ class DockKalman(Seabot2Dock):
             print(density, data_density.density)
 
             offset_total = (data.offset-chi*z-chi2*np.square(z)+volume_air*(temperature+273.15)/((pressure+1.0)*1e5))*1e6
-            offset_total_density = ((density-density[np.nanargmin(density)])*12.) + offset_total # in g
+            offset_total_density_pos = ((density-density[np.nanargmin(density)])*12.) + offset_total # in g
+            offset_total_density_neg = -((density-density[np.nanargmin(density)])*12.) + offset_total # in g
 
             pg_offset_total.plot(data.time, offset_total[:-1], pen=(0,255,0), name="offset total", stepMode=True)
-            pg_offset_total.plot(data.time, offset_total_density[:-1], pen=(0,0,255), name="offset total (density corrected)", stepMode=True)
+            pg_offset_total.plot(data.time, offset_total_density_pos[:-1], pen=(0,0,255), name="offset total (density corrected (+) )", stepMode=True)
+            pg_offset_total.plot(data.time, offset_total_density_neg[:-1], pen=(0,0,255), name="offset total (density corrected (-) )", stepMode=True)
 
             pg_offset_total.setLabel('left', "offset", "g")
             dock_offset_total.addWidget(pg_offset_total)
