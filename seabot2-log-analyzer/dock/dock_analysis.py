@@ -55,6 +55,11 @@ class DockAnalysis(Seabot2Dock):
             cm = pg.colormap.get('summer', source='matplotlib') # prepare a linear color map
             pen = cm.getPen( span=(0.0, 1.0) ) # gradient from blue (y=0) to white (y=1)
 
+            # Create a 2D array from temperature and depth
+            valid = np.isfinite(self.temperature) & np.isfinite(data_kalman.depth)
+            self.td_temperature = self.temperature[valid]
+            self.td_depth = data_kalman.depth[valid]
+
             self.plot_td = pg_temperature_depth.plot(self.temperature, data_kalman.depth[:-1], pen=pen, name="Temperature", stepMode=True)
             pg_temperature_depth.disableAutoRange()
             pg_temperature_depth.setLabel('bottom', "Temperature", "°C")
@@ -80,6 +85,31 @@ class DockAnalysis(Seabot2Dock):
                 dock_temperature_depth.addWidget(self.scrolling_button_td, row=3, col=0)
                 self.scrolling_t = 0
 
+                self.scrolling_velocity = QtGui.QSpinBox()
+                self.scrolling_velocity.setRange(0, 1000)
+                self.scrolling_velocity.setSingleStep(10)
+                self.scrolling_velocity.setValue(10)
+                dock_temperature_depth.addWidget(self.scrolling_velocity, row=4, col=0)
+
+                # Export temperature with a button and choose the directory
+                self.button_export_temperature = QtGui.QPushButton('Export temperature')
+                self.button_export_temperature.clicked.connect(self.export_temperature)
+                dock_temperature_depth.addWidget(self.button_export_temperature, row=5, col=0)
+
+    # Export the temperature as a numpy file
+    def export_temperature(self):
+        f = interpolate.interp1d(self.td_depth, self.td_temperature)
+
+        xnew = np.arange(np.min(self.td_depth), np.max(self.td_depth), 0.01)
+        ynew = f(xnew)
+        import matplotlib.pyplot as plt
+        plt.plot(self.td_depth, self.td_temperature, 'o', xnew, ynew, '-')
+        plt.show()
+
+        filename = QtGui.QFileDialog.getSaveFileName(self, 'Export temperature', os.path.expanduser("~"), filter="*.profile")
+        if filename[0]:
+            np.savetxt(filename[0], np.array([xnew, ynew]))
+
     def update_plot_td(self):
         data_kalman = self.s2b.kalman
         t_bounds = self.lr_time.getRegion()
@@ -89,15 +119,15 @@ class DockAnalysis(Seabot2Dock):
             self.t_bounds_old = t_bounds
             ub = np.where(data_kalman.time <= np.max((1,t_bounds[1])))[0][-1]
             lb = np.where(data_kalman.time >= np.min((data_kalman.time[-1],t_bounds[0])))[0][0]
+            index_diam = ub - lb
 
             if self.scrolling_button_td.isChecked() and t_bounds == self.t_bounds_old:
-                self.scrolling_t +=10
+                self.scrolling_t = self.scrolling_velocity.value()
                 ub += self.scrolling_t
                 lb += self.scrolling_t
-                if (lb + t_bounds_diam) > np.size(data_kalman.time):
+                if ub >= np.size(data_kalman.time):
                     lb = 0
-                    ub = t_bounds_diam
-                    self.scrolling_t = 0
+                    ub = index_diam
             else:
                 self.scrolling_t = 0
 
