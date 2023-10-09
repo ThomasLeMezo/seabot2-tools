@@ -19,6 +19,7 @@ class DockDataFilter(Seabot2Dock):
         self.add_power_filter()
         self.add_density()
         self.add_sound_speed()
+        self.add_temperature()
 
     def add_internal_sensor(self):
         dock_internal_sensor = Dock("Internal Sensor")
@@ -95,7 +96,7 @@ class DockDataFilter(Seabot2Dock):
 
         data = self.s2b.density
         data_fusion = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
 
         if(not data.is_empty()):
             pg_depth = self.get_pg_depth(data_fusion, data_mission, data_name="depth", data_mission_name="mission")
@@ -114,7 +115,7 @@ class DockDataFilter(Seabot2Dock):
 
         data = self.s2b.density
         data_fusion = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
 
         if(not data.is_empty()):
             pg_depth = self.get_pg_depth(data_fusion, data_mission, data_name="depth", data_mission_name="mission")
@@ -126,3 +127,16 @@ class DockDataFilter(Seabot2Dock):
             pg_sound_speed.setLabel('left', "m/s")
             dock_sound_speed.addWidget(pg_sound_speed)
             pg_sound_speed.setXLink(pg_depth)
+
+    def add_temperature(self):
+        dock_temperature = Dock("Temperature")
+        self.addDock(dock_temperature, position='below')
+
+        data = self.s2b.fusion_temperature
+        if not data.is_empty():
+            pg_temperature = pg.PlotWidget()
+            self.set_plot_options(pg_temperature)
+            pg_temperature.plot(data.time, data.temperature[:-1], pen=(0,255,0), name="Temperature", stepMode=True)
+            pg_temperature.setLabel('left', "temperature", "°C")
+            dock_temperature.addWidget(pg_temperature)
+

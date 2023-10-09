@@ -148,7 +148,7 @@ class DockKalman(Seabot2Dock):
         self.addDock(dock_offset_total, position='below')
         data = self.s2b.kalman
         data_fusion = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_filter = self.s2b.fusion_sensor_external
         data_temperature = self.s2b.temperature
         data_density = self.s2b.density
@@ -176,7 +176,7 @@ class DockKalman(Seabot2Dock):
 
             f_density = interpolate.interp1d(data_density.time, data_density.density, bounds_error=False, kind="zero")
             density = f_density(data.time)
-            print(density, data_density.density)
+            #print(density, data_density.density)
 
             offset_total = (data.offset-chi*z-chi2*np.square(z)+volume_air*(temperature+273.15)/((pressure+1.0)*1e5))*1e6
             offset_total_density_pos = ((density-density[np.nanargmin(density)])*12.) + offset_total # in g
@@ -200,7 +200,7 @@ class DockKalman(Seabot2Dock):
         data_kalman = self.s2b.kalman
         data_fusion_internal = self.s2b.fusion_sensor_internal
         data_fusion_external = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_piston = self.s2b.piston_state
 
         piston_volume = -data_piston.position*self.tick_to_volume

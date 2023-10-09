@@ -22,7 +22,7 @@ class DockSafety(Seabot2Dock):
         dock_kalman_state = Dock("Global Safety")
         self.addDock(dock_kalman_state, position='below')
         data_depth = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_safety = self.s2b.safety
 
         if(not data_depth.is_empty() and not data_mission.is_empty() and not data_safety.is_empty()):
@@ -50,7 +50,7 @@ class DockSafety(Seabot2Dock):
         dock_cpu_ram = Dock("Cpu/RAM")
         self.addDock(dock_cpu_ram, position='below')
         data_depth = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_safety = self.s2b.safety
 
         if(not data_depth.is_empty() and not data_mission.is_empty() and not data_safety.is_empty()):
@@ -74,7 +74,7 @@ class DockSafety(Seabot2Dock):
         dock_kalman_state = Dock("Depth limit")
         self.addDock(dock_kalman_state, position='below')
         data_depth = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_safety = self.s2b.safety
 
         if(not data_depth.is_empty() and not data_mission.is_empty() and not data_safety.is_empty()):

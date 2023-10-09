@@ -25,6 +25,7 @@ class DockAnalysis(Seabot2Dock):
         self.add_temperature_profile()
         self.add_piston_depth()
         self.add_piston()
+        self.add_temperature_profile_coeff()
 
         self.first_time_replay = True
 
@@ -41,9 +42,9 @@ class DockAnalysis(Seabot2Dock):
         self.addDock(dock_temperature_depth, position='below')
         data_kalman = self.s2b.kalman
         data_depth = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_safety = self.s2b.safety
-        data_temp = self.s2b.temperature
+        data_temp = self.s2b.fusion_temperature
         data_depth = self.s2b.fusion_sensor_external
 
         if(not data_temp.is_empty()):
@@ -86,7 +87,7 @@ class DockAnalysis(Seabot2Dock):
                 self.scrolling_t = 0
 
                 self.scrolling_velocity = QtGui.QSpinBox()
-                self.scrolling_velocity.setRange(0, 1000)
+                self.scrolling_velocity.setRange(0, 10000)
                 self.scrolling_velocity.setSingleStep(10)
                 self.scrolling_velocity.setValue(10)
                 dock_temperature_depth.addWidget(self.scrolling_velocity, row=4, col=0)
@@ -108,7 +109,11 @@ class DockAnalysis(Seabot2Dock):
 
         filename = QtGui.QFileDialog.getSaveFileName(self, 'Export temperature', os.path.expanduser("~"), filter="*.profile")
         if filename[0]:
+            # if filename do not ends with ".profile" add it
+            if not filename[0].endswith(".profile"):
+                filename[0] += ".profile"
             np.savetxt(filename[0], np.array([xnew, ynew]))
+            np.savetxt(filename[0]+"_raw", np.array([self.td_depth, self.td_temperature]))
 
     def update_plot_td(self):
         data_kalman = self.s2b.kalman
@@ -148,8 +153,8 @@ class DockAnalysis(Seabot2Dock):
         dock_temperature_depth = Dock("Temperature Profile")
         self.addDock(dock_temperature_depth, position='below')
 
-        data_temp = self.s2b.temperature
-        data_mission = self.s2b.waypoint
+        data_temp = self.s2b.fusion_temperature
+        data_mission = self.get_mission_waypoints()
         data_depth = self.s2b.fusion_sensor_external
 
         if(not data_temp.is_empty() and not data_mission.is_empty() and not data_depth.is_empty()):
@@ -173,6 +178,38 @@ class DockAnalysis(Seabot2Dock):
             pg_temperature_profile.setLabel('left', "Depth", "m")
             pg_temperature_profile.getViewBox().invertY(True)
             dock_temperature_depth.addWidget(pg_temperature_profile)
+
+    def add_temperature_profile_coeff(self):
+        dock_temperature_profile = Dock("Temperature Profile Coeff")
+        self.addDock(dock_temperature_profile, position='below')
+
+        data_temp = self.s2b.fusion_temperature
+        data_mission = self.get_mission_waypoints()
+        data_depth = self.s2b.fusion_sensor_external
+        data_temperature_profile = self.s2b.temperature_profile
+
+        if not data_mission.is_empty() and not data_depth.is_empty():
+            pg_depth = self.get_pg_depth(data_depth, data_mission)
+            dock_temperature_profile.addWidget(pg_depth)
+
+            pg_temperature = pg.PlotWidget()
+            self.set_plot_options(pg_temperature)
+            pg_temperature.plot(data_temp.time, data_temp.temperature[:-1], pen=(0,255,0), name="Temperature", stepMode=True)
+            pg_temperature.setLabel('left', "temperature", "°C")
+            dock_temperature_profile.addWidget(pg_temperature)
+            pg_temperature.setXLink(pg_depth)
+
+            pg_slope = pg.PlotWidget()
+            self.set_plot_options(pg_slope)
+            pg_slope.plot(data_temperature_profile.time, data_temperature_profile.profile_slope[:-1], pen=(0,255,0), name="profile slope", stepMode=True)
+            dock_temperature_profile.addWidget(pg_slope)
+            pg_slope.setXLink(pg_depth)
+
+            pg_intercept = pg.PlotWidget()
+            self.set_plot_options(pg_intercept)
+            pg_intercept.plot(data_temperature_profile.time, data_temperature_profile.profile_intercept[:-1], pen=(0,255,0), name="profile intercept", stepMode=True)
+            dock_temperature_profile.addWidget(pg_intercept)
+            pg_intercept.setXLink(pg_depth)
 
 
     def add_piston_depth(self):
@@ -286,7 +323,7 @@ class DockAnalysis(Seabot2Dock):
         data_kalman = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
         data_control = self.s2b.depth_control_debug
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_piston = self.s2b.piston_state
         data_density = self.s2b.density
 
@@ -317,7 +354,7 @@ class DockAnalysis(Seabot2Dock):
         data = self.s2b.kalman
         data_fusion = self.s2b.fusion_sensor_external
         data_filter = self.s2b.fusion_sensor_external
-        data_temperature = self.s2b.temperature
+        data_temperature = self.s2b.fusion_temperature
 
         if(not data.is_empty()):
             pg_volume_air = pg.PlotWidget()

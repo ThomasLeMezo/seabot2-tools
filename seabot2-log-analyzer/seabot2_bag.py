@@ -21,6 +21,9 @@ from msg.seabot2_log_parameter import Seabot2LogParameter
 from msg.seabot2_profile import Seabot2Profile
 from msg.seabot2_alpha_debug import Seabot2AlphaDebug
 from msg.seabot2_simulation_debug import Seabot2SimulationDebug
+from msg.seabot2_mission_state import Seabot2MissionState
+from msg.seabot2_depth_control_set_point import Seabot2DepthControlSetPoint
+from msg.seabot2_temperature_profile import Seabot2TemperatureProfile
 
 import datetime
 
@@ -50,6 +53,8 @@ class Seabot2Bag():
 
 		# Mission
 		self.waypoint = Seabot2Waypoint(bag_path, "/mission/waypoint", offset_date)
+		self.mission_state = Seabot2MissionState(bag_path, "/mission/mission_state", offset_date)
+		self.mission_depth_control_set_point = Seabot2DepthControlSetPoint(bag_path, "/mission/depth_control_set_point", offset_date)
 
 		# Observer
 		self.fusion_sensor_external = Seabot2DepthPose(bag_path, "/observer/depth", offset_date)
@@ -59,6 +64,8 @@ class Seabot2Bag():
 		self.gnss_pose_mean = Seabot2GnssPose(bag_path, "/observer/pose_mean", offset_date)
 		self.fusion_power = Seabot2PowerState(bag_path, "/observer/power", offset_date)
 		self.density = Seabot2Density(bag_path, "/observer/density", offset_date)
+		self.fusion_temperature = Seabot2TemperatureSensorData(bag_path, "/observer/temperature", offset_date)
+		self.temperature_profile = Seabot2TemperatureProfile(bag_path, "/observer/temperature_profile", offset_date)
 
 		self.safety = Seabot2SafetyStatus(bag_path, "/safety/safety", offset_date)
 

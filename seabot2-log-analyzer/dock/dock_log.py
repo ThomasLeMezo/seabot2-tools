@@ -52,7 +52,7 @@ class DockLog(Seabot2Dock):
 
         data = self.s2b.rosout
         data_fusion = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
 
         if(not data.is_empty()):
 

@@ -26,7 +26,7 @@ class DockPing1D(Seabot2Dock):
         dock_altitude = Dock("Altitude")
         self.addDock(dock_altitude, position='below')
         data_depth = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_profile = self.s2b.profile
 
         if(not data_depth.is_empty() and not data_mission.is_empty() and not data_profile.is_empty()):
@@ -68,7 +68,7 @@ class DockPing1D(Seabot2Dock):
         dock_details = Dock("Details")
         self.addDock(dock_details, position='below')
         data_depth = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_profile = self.s2b.profile
 
         if(not data_depth.is_empty() and not data_mission.is_empty() and not data_profile.is_empty()):

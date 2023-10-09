@@ -22,6 +22,12 @@ class Seabot2Dock(DockArea):
     def set_plot_options(self, plot):
         plot.addLegend()
 
+    def get_mission_waypoints(self):
+        if not self.s2b.waypoint.is_empty():
+            return self.s2b.waypoint
+        else:
+            return self.s2b.mission_depth_control_set_point
+
     def plot_piston_position(self):
         data = self.s2b.piston_state
         pg_position = pg.PlotWidget()

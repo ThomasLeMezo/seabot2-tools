@@ -54,7 +54,7 @@ class DockDepthControl(Seabot2Dock):
         self.addDock(dock_depth, position='below')
         data_kalman = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_alpha = self.s2b.alpha_debug
         data_simulation = self.s2b.simulation_debug
 
@@ -103,7 +103,7 @@ class DockDepthControl(Seabot2Dock):
         self.addDock(dock_depth_acc, position='below')
         data_kalman = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_alpha = self.s2b.alpha_debug
 
         if (not data.is_empty() and not data_mission.is_empty()):
@@ -158,7 +158,7 @@ class DockDepthControl(Seabot2Dock):
         # data = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
         data_control = self.s2b.depth_control_debug
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
 
         if (not data.is_empty()):
             pg_depth = self.get_pg_depth(data, data_mission)
@@ -174,7 +174,7 @@ class DockDepthControl(Seabot2Dock):
         data_kalman = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
         data_control = self.s2b.depth_control_debug
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_piston = self.s2b.piston_state
 
         if (not data.is_empty()):
@@ -205,7 +205,7 @@ class DockDepthControl(Seabot2Dock):
         # data = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
         data_control = self.s2b.depth_control_debug
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_piston = self.s2b.piston_state
 
         if (not data.is_empty()):
@@ -236,7 +236,7 @@ class DockDepthControl(Seabot2Dock):
         # data = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
         data_control = self.s2b.depth_control_debug
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_piston = self.s2b.piston_state
 
         if (not data.is_empty()):
@@ -269,7 +269,7 @@ class DockDepthControl(Seabot2Dock):
         self.addDock(dock_alpha, position='below')
         data_kalman = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_alpha = self.s2b.alpha_debug
 
         if (not data.is_empty() and not data_mission.is_empty()):
@@ -319,7 +319,7 @@ class DockDepthControl(Seabot2Dock):
         self.addDock(dock_alpha2, position='below')
         data_kalman = self.s2b.kalman
         data = self.s2b.fusion_sensor_external
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
         data_alpha = self.s2b.alpha_debug
         data_control = self.s2b.depth_control_debug
 

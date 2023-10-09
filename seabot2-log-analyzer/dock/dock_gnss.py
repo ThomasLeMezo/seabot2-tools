@@ -92,7 +92,7 @@ class DockGnss(Seabot2Dock):
         data = self.s2b.gps_fix
         
         data_kalman = self.s2b.kalman
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
 
         if(not data.is_empty()):
             pg_depth = self.get_pg_depth(data_kalman, data_mission, "depth (kalman)", "depth (mission)")
@@ -121,7 +121,7 @@ class DockGnss(Seabot2Dock):
         self.addDock(dock_time, position='below')
         data = self.s2b.gps_fix
         data_kalman = self.s2b.kalman
-        data_mission = self.s2b.waypoint
+        data_mission = self.get_mission_waypoints()
 
         if(not data.is_empty()):
             pg_depth = self.get_pg_depth(data_kalman, data_mission, "depth (kalman)", "depth (mission)")
