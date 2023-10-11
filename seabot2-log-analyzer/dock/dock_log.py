@@ -99,10 +99,11 @@ class DockLog(Seabot2Dock):
                     table_node[node_name] = QtWidgets.QTreeWidgetItem([node_name])
                     pg_param.addTopLevelItem(table_node[node_name])
 
-            for i in range(len(data.value)):
-                item = QtWidgets.QTreeWidgetItem([data.param_name[i]])
-                item.setText(1, self.get_val(data.value[i]))
-                table_node[data.node_name[i]].addChild(item)
+            # ToDo : correction
+            # for i in range(len(data.value)):
+            #     item = QtWidgets.QTreeWidgetItem([data.param_name[i]])
+            #     item.setText(1, self.get_val(data.value[i]))
+            #     table_node[data.node_name[i]].addChild(item)
 
             for i in range(2):
                 pg_param.resizeColumnToContents(i)

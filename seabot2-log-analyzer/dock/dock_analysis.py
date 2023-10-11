@@ -29,7 +29,7 @@ class DockAnalysis(Seabot2Dock):
         self.add_temperature_profile()
         self.add_piston_depth()
         self.add_piston()
-        self.add_temperature_profile_coeff()
+        self.add_temperature_keeping()
 
         self.first_time_replay = True
 
@@ -131,7 +131,7 @@ class DockAnalysis(Seabot2Dock):
         ynew[-1] = ynew[-2] # end of data
 
         fs = 1./slice_size
-        cutoff_frequency = 3  # Cutoff frequency in 1/m ?
+        cutoff_frequency = 1  # Cutoff frequency in 1/m ?
         order = 4  # Filter order
         b, a = butter(order, cutoff_frequency / (0.5 * fs), btype='low', analog=False)
         zi = signal.lfilter_zi(b, a)
@@ -148,8 +148,8 @@ class DockAnalysis(Seabot2Dock):
                                                      filter="*.profile")
         if filename[0]:
             # if filename do not ends with ".profile" add it
-            if not filename[0].endswith(".profile"):
-                filename[0] += ".profile"
+            # if not filename[0].endswith(".profile"):
+            #     filename[0] += ".profile"
             np.savetxt(filename[0], np.array([xnew, filtered_signal]))
             np.savetxt(filename[0] + "_raw", np.array([self.td_depth, self.td_temperature]))
 
@@ -220,14 +220,14 @@ class DockAnalysis(Seabot2Dock):
             pg_temperature_profile.getViewBox().invertY(True)
             dock_temperature_depth.addWidget(pg_temperature_profile)
 
-    def add_temperature_profile_coeff(self):
-        dock_temperature_profile = Dock("Temperature Profile Coeff")
+    def add_temperature_keeping(self):
+        dock_temperature_profile = Dock("Temperature Keeping")
         self.addDock(dock_temperature_profile, position='below')
 
         data_temp = self.s2b.fusion_temperature
         data_mission = self.get_mission_waypoints()
         data_depth = self.s2b.fusion_sensor_external
-        data_temperature_profile = self.s2b.temperature_profile
+        data_kalman = self.s2b.kalman
 
         if not data_mission.is_empty() and not data_depth.is_empty():
             pg_depth = self.get_pg_depth(data_depth, data_mission)
@@ -241,19 +241,63 @@ class DockAnalysis(Seabot2Dock):
             dock_temperature_profile.addWidget(pg_temperature)
             pg_temperature.setXLink(pg_depth)
 
-            pg_slope = pg.PlotWidget()
-            self.set_plot_options(pg_slope)
-            pg_slope.plot(data_temperature_profile.time, data_temperature_profile.profile_slope[:-1], pen=(0, 255, 0),
-                          name="profile slope", stepMode=True)
-            dock_temperature_profile.addWidget(pg_slope)
-            pg_slope.setXLink(pg_depth)
+            pg_velocity = pg.PlotWidget()
+            self.set_plot_options(pg_velocity)
+            pg_velocity.plot(data_depth.time, data_depth.velocity[:-1], pen=(255, 0, 0), name="velocity [filter]", stepMode=True)
+            pg_velocity.plot(data_kalman.time, data_kalman.velocity[:-1], pen=(255, 0, 255), name="velocity [kalman]",
+                             stepMode=True)
+            pg_velocity.plot(data_mission.time, data_mission.limit_velocity[:-1], pen=(0, 255, 0),
+                             name="target_velocity_max", stepMode=True)
+            pg_velocity.plot(data_mission.time, -np.array(data_mission.limit_velocity[:-1]), pen=(0, 255, 0),
+                             name="target_velocity_min", stepMode=True)
+            dock_temperature_profile.addWidget(pg_velocity)
+            pg_velocity.setXLink(pg_depth)
 
-            pg_intercept = pg.PlotWidget()
-            self.set_plot_options(pg_intercept)
-            pg_intercept.plot(data_temperature_profile.time, data_temperature_profile.profile_intercept[:-1],
-                              pen=(0, 255, 0), name="profile intercept", stepMode=True)
-            dock_temperature_profile.addWidget(pg_intercept)
-            pg_intercept.setXLink(pg_depth)
+            # Export data
+            self.button_export_data_keeping = QtGui.QPushButton('Export data')
+            self.button_export_data_keeping.clicked.connect(self.export_data_keeping)
+            dock_temperature_profile.addWidget(self.button_export_data_keeping, row=5, col=0)
+
+    def export_data_keeping(self):
+        data_temp = self.s2b.fusion_temperature
+        data_mission = self.get_mission_waypoints()
+        data_depth = self.s2b.fusion_sensor_external
+        data_kalman = self.s2b.kalman
+        data_profile = self.s2b.profile
+
+        #
+        time_depth = data_depth.time
+        depth = data_depth.depth
+        velocity = data_depth.velocity
+        #
+        time_kalman = data_kalman.time
+        depth_k = data_kalman.depth
+        velocity_k = data_kalman.velocity
+        #
+        time_temperature = data_temp.time
+        temperature = data_temp.temperature
+        #
+        time_altitude = data_profile.time
+        altitude = data_profile.distance/1e3
+
+        f_depth_k = interpolate.interp1d(time_kalman, depth_k, bounds_error=False, kind="zero")
+        f_velocity_k = interpolate.interp1d(time_kalman, velocity_k, bounds_error=False, kind="zero")
+        f_temperature = interpolate.interp1d(time_temperature, temperature, bounds_error=False, kind="zero")
+        f_altitude = interpolate.interp1d(time_altitude, altitude, bounds_error=False, kind="zero")
+
+        interp_depth_k = f_depth_k(time_depth)
+        interp_velocity_k = f_velocity_k(time_depth)
+        interp_temperature = f_temperature(time_depth)
+        interp_altitude = f_altitude(time_depth)
+
+        import time
+        time_depth += time.mktime(data_depth.starting_time.timetuple())
+
+        filename = QtGui.QFileDialog.getSaveFileName(self, 'Export data', os.path.expanduser("~"),
+                                                     filter="*.txt")
+        if filename[0]:
+            np.savetxt(filename[0], (time_depth, depth, velocity, interp_depth_k, interp_velocity_k, interp_temperature, interp_altitude),
+                       header="time_depth, depth, velocity, interp_depth_k, interp_velocity_k, interp_temperature, interp_altitude")
 
     def add_piston_depth(self):
         dock_compressibility = Dock("Piston/Depth")
