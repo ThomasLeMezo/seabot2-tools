@@ -69,7 +69,7 @@ class DockLog(Seabot2Dock):
                 item.setText(2, data.name[i])
                 item.setText(3, data.msg[i])
                 item.setText(4, data.function[i])
-                item.setText(5, data.file[i])
+                item.setText(5, data.file_name[i])
                 item.setText(6, str(data.line[i]))
                 if(data.level[i]>=30):
                     for j in range(6):

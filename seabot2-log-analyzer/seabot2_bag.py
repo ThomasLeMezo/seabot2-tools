@@ -15,7 +15,7 @@ from msg.seabot2_bme280_data import Seabot2Bme280Data
 from msg.seabot2_depth_control_debug import Seabot2DepthControlDebug
 from msg.seabot2_twist import Seabot2Twist
 from msg.seabot2_temperature_sensor_data import Seabot2TemperatureSensorData
-from msg.seabot2_rosout import Seabot2RosOut
+from msg.seabot2_log import Seabot2Log
 from msg.seabot2_density import Seabot2Density
 from msg.seabot2_log_parameter import Seabot2LogParameter
 from msg.seabot2_profile import Seabot2Profile
@@ -23,7 +23,6 @@ from msg.seabot2_alpha_debug import Seabot2AlphaDebug
 from msg.seabot2_simulation_debug import Seabot2SimulationDebug
 from msg.seabot2_mission_state import Seabot2MissionState
 from msg.seabot2_depth_control_set_point import Seabot2DepthControlSetPoint
-from msg.seabot2_temperature_profile import Seabot2TemperatureProfile
 
 import datetime
 
@@ -65,12 +64,11 @@ class Seabot2Bag():
 		self.fusion_power = Seabot2PowerState(bag_path, "/observer/power", offset_date)
 		self.density = Seabot2Density(bag_path, "/observer/density", offset_date)
 		self.fusion_temperature = Seabot2TemperatureSensorData(bag_path, "/observer/temperature", offset_date)
-		self.temperature_profile = Seabot2TemperatureProfile(bag_path, "/observer/temperature_profile", offset_date)
 
 		self.safety = Seabot2SafetyStatus(bag_path, "/safety/safety", offset_date)
 
 		# Info
-		self.rosout = Seabot2RosOut(bag_path, "/rosout", offset_date)
+		self.rosout = Seabot2Log(bag_path, "/rosout", offset_date)
 		self.log_parameter = Seabot2LogParameter(bag_path, "/observer/parameters", offset_date)
 
 		# Simulation

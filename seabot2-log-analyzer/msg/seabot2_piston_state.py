@@ -1,10 +1,12 @@
 #!/bin/python3
 # This file was generated automatically, do not edit
 import sys
-sys.path.append('..')
-from seabot2_data import Seabot2Data
 import numpy as np
 import datetime
+from seabot2_data import Seabot2Data
+
+sys.path.append('..')
+
 
 class Seabot2PistonState(Seabot2Data):
     def __init__(self, bag_path="", topic_name="", start_date=datetime.datetime(2019, 1, 1)):
@@ -26,6 +28,7 @@ class Seabot2PistonState(Seabot2Data):
         self.load_message()
         self.resize_data_array()
         super().resize_data_array()
+        self.save_data()
 
     def process_message(self, msg):
         
@@ -56,3 +59,40 @@ class Seabot2PistonState(Seabot2Data):
         self.battery_voltage = np.resize(self.battery_voltage, self.k)
         self.motor_current = np.resize(self.motor_current, self.k)
         return
+        
+    def save_data(self):
+        import os
+        # Test if save directory exists
+        if not os.path.exists(self.topic_name_dir):
+            os.makedirs(self.topic_name_dir)
+            # Save data (compressed)
+            np.savez_compressed(self.topic_full_dir,
+                                time=self.time,
+                                position=self.position,
+                                position_set_point=self.position_set_point,
+                                switch_top=self.switch_top,
+                                switch_bottom=self.switch_bottom,
+                                enable=self.enable,
+                                motor_sens=self.motor_sens,
+                                state=self.state,
+                                motor_speed_set_point=self.motor_speed_set_point,
+                                motor_speed=self.motor_speed,
+                                battery_voltage=self.battery_voltage,
+                                motor_current=self.motor_current,)
+
+    def load_message_from_file(self):
+        data = np.load(self.topic_name_dir + "/" + self.topic_name_file, allow_pickle=True)
+        self.time = data['time']
+        self.position = data['position']
+        self.position_set_point = data['position_set_point']
+        self.switch_top = data['switch_top']
+        self.switch_bottom = data['switch_bottom']
+        self.enable = data['enable']
+        self.motor_sens = data['motor_sens']
+        self.state = data['state']
+        self.motor_speed_set_point = data['motor_speed_set_point']
+        self.motor_speed = data['motor_speed']
+        self.battery_voltage = data['battery_voltage']
+        self.motor_current = data['motor_current']
+        self.k = len(self.time)
+    

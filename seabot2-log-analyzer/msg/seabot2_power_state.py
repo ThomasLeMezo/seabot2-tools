@@ -1,10 +1,12 @@
 #!/bin/python3
 # This file was generated automatically, do not edit
 import sys
-sys.path.append('..')
-from seabot2_data import Seabot2Data
 import numpy as np
 import datetime
+from seabot2_data import Seabot2Data
+
+sys.path.append('..')
+
 
 class Seabot2PowerState(Seabot2Data):
     def __init__(self, bag_path="", topic_name="", start_date=datetime.datetime(2019, 1, 1)):
@@ -22,6 +24,7 @@ class Seabot2PowerState(Seabot2Data):
         self.load_message()
         self.resize_data_array()
         super().resize_data_array()
+        self.save_data()
 
     def process_message(self, msg):
         
@@ -44,3 +47,32 @@ class Seabot2PowerState(Seabot2Data):
         self.motor_current = np.resize(self.motor_current, self.k)
         self.power_state = np.resize(self.power_state, self.k)
         return
+        
+    def save_data(self):
+        import os
+        # Test if save directory exists
+        if not os.path.exists(self.topic_name_dir):
+            os.makedirs(self.topic_name_dir)
+            # Save data (compressed)
+            np.savez_compressed(self.topic_full_dir,
+                                time=self.time,
+                                cell_volt0=self.cell_volt0,
+                                cell_volt1=self.cell_volt1,
+                                battery_volt=self.battery_volt,
+                                esc_current0=self.esc_current0,
+                                esc_current1=self.esc_current1,
+                                motor_current=self.motor_current,
+                                power_state=self.power_state,)
+
+    def load_message_from_file(self):
+        data = np.load(self.topic_name_dir + "/" + self.topic_name_file, allow_pickle=True)
+        self.time = data['time']
+        self.cell_volt0 = data['cell_volt0']
+        self.cell_volt1 = data['cell_volt1']
+        self.battery_volt = data['battery_volt']
+        self.esc_current0 = data['esc_current0']
+        self.esc_current1 = data['esc_current1']
+        self.motor_current = data['motor_current']
+        self.power_state = data['power_state']
+        self.k = len(self.time)
+    

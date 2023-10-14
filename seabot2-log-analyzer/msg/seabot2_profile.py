@@ -1,10 +1,12 @@
 #!/bin/python3
 # This file was generated automatically, do not edit
 import sys
-sys.path.append('..')
-from seabot2_data import Seabot2Data
 import numpy as np
 import datetime
+from seabot2_data import Seabot2Data
+
+sys.path.append('..')
+
 
 class Seabot2Profile(Seabot2Data):
     def __init__(self, bag_path="", topic_name="", start_date=datetime.datetime(2019, 1, 1)):
@@ -24,6 +26,7 @@ class Seabot2Profile(Seabot2Data):
         self.load_message()
         self.resize_data_array()
         super().resize_data_array()
+        self.save_data()
 
     def process_message(self, msg):
         
@@ -49,4 +52,37 @@ class Seabot2Profile(Seabot2Data):
         self.gain_setting = np.resize(self.gain_setting, self.k)
         self.profile_data_length = np.resize(self.profile_data_length, self.k)
         self.profile_data = np.resize(self.profile_data, self.k)
+        return
         
+    def save_data(self):
+        import os
+        # Test if save directory exists
+        if not os.path.exists(self.topic_name_dir):
+            os.makedirs(self.topic_name_dir)
+            # Save data (compressed)
+            np.savez_compressed(self.topic_full_dir,
+                                time=self.time,
+                                distance=self.distance,
+                                confidence=self.confidence,
+                                transmit_duration=self.transmit_duration,
+                                ping_number=self.ping_number,
+                                scan_start=self.scan_start,
+                                scan_length=self.scan_length,
+                                gain_setting=self.gain_setting,
+                                profile_data_length=self.profile_data_length,
+                                profile_data=self.profile_data,)
+
+    def load_message_from_file(self):
+        data = np.load(self.topic_name_dir + "/" + self.topic_name_file, allow_pickle=True)
+        self.time = data['time']
+        self.distance = data['distance']
+        self.confidence = data['confidence']
+        self.transmit_duration = data['transmit_duration']
+        self.ping_number = data['ping_number']
+        self.scan_start = data['scan_start']
+        self.scan_length = data['scan_length']
+        self.gain_setting = data['gain_setting']
+        self.profile_data_length = data['profile_data_length']
+        self.profile_data = data['profile_data']
+        self.k = len(self.time)
+    

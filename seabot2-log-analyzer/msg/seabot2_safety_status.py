@@ -1,10 +1,12 @@
 #!/bin/python3
 # This file was generated automatically, do not edit
 import sys
-sys.path.append('..')
-from seabot2_data import Seabot2Data
 import numpy as np
 import datetime
+from seabot2_data import Seabot2Data
+
+sys.path.append('..')
+
 
 class Seabot2SafetyStatus(Seabot2Data):
     def __init__(self, bag_path="", topic_name="", start_date=datetime.datetime(2019, 1, 1)):
@@ -28,6 +30,7 @@ class Seabot2SafetyStatus(Seabot2Data):
         self.load_message()
         self.resize_data_array()
         super().resize_data_array()
+        self.save_data()
 
     def process_message(self, msg):
         
@@ -62,3 +65,44 @@ class Seabot2SafetyStatus(Seabot2Data):
         self.limit_depth = np.resize(self.limit_depth, self.k)
         self.gnss_fix_once = np.resize(self.gnss_fix_once, self.k)
         return
+        
+    def save_data(self):
+        import os
+        # Test if save directory exists
+        if not os.path.exists(self.topic_name_dir):
+            os.makedirs(self.topic_name_dir)
+            # Save data (compressed)
+            np.savez_compressed(self.topic_full_dir,
+                                time=self.time,
+                                global_safety_valid=self.global_safety_valid,
+                                published_frequency=self.published_frequency,
+                                depth_limit=self.depth_limit,
+                                batteries_limit=self.batteries_limit,
+                                depressurization=self.depressurization,
+                                seafloor=self.seafloor,
+                                piston=self.piston,
+                                zero_depth=self.zero_depth,
+                                cpu=self.cpu,
+                                ram=self.ram,
+                                bathy=self.bathy,
+                                limit_depth=self.limit_depth,
+                                gnss_fix_once=self.gnss_fix_once,)
+
+    def load_message_from_file(self):
+        data = np.load(self.topic_name_dir + "/" + self.topic_name_file, allow_pickle=True)
+        self.time = data['time']
+        self.global_safety_valid = data['global_safety_valid']
+        self.published_frequency = data['published_frequency']
+        self.depth_limit = data['depth_limit']
+        self.batteries_limit = data['batteries_limit']
+        self.depressurization = data['depressurization']
+        self.seafloor = data['seafloor']
+        self.piston = data['piston']
+        self.zero_depth = data['zero_depth']
+        self.cpu = data['cpu']
+        self.ram = data['ram']
+        self.bathy = data['bathy']
+        self.limit_depth = data['limit_depth']
+        self.gnss_fix_once = data['gnss_fix_once']
+        self.k = len(self.time)
+    

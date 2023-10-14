@@ -5,15 +5,17 @@ import re
 from rosidl_runtime_py import utilities
 from jinja2 import Template
 
-def generate_interface_bag_file(package_name = "", msg_name = ""):
 
+def generate_interface_bag_file(package_name="", msg_name=""):
     template_msg = """#!/bin/python3
 # This file was generated automatically, do not edit
 import sys
-sys.path.append('..')
-from seabot2_data import Seabot2Data
 import numpy as np
 import datetime
+from seabot2_data import Seabot2Data
+
+sys.path.append('..')
+
 
 class Seabot2{{ class_name }}(Seabot2Data):
     def __init__(self, bag_path="", topic_name="", start_date=datetime.datetime(2019, 1, 1)):
@@ -25,16 +27,34 @@ class Seabot2{{ class_name }}(Seabot2Data):
         self.load_message()
         self.resize_data_array()
         super().resize_data_array()
+        self.save_data()
 
     def process_message(self, msg):
         {% for variable in table %}
-        self.{{ variable }}[self.k] = msg.{{ table[variable][0] }}{% endfor %}
+        self.{{ variable }}[self.k] = msg.{{ table[variable][2] }}{% endfor %}
         return
 
     def resize_data_array(self):
         {% for variable in table %}
         self.{{ variable }} = np.resize(self.{{ variable }}, self.k){% endfor %}
-        return"""
+        return
+        
+    def save_data(self):
+        import os
+        # Test if save directory exists
+        if not os.path.exists(self.topic_name_dir):
+            os.makedirs(self.topic_name_dir)
+            # Save data (compressed)
+            np.savez_compressed(self.topic_full_dir,
+                                time=self.time,{% for variable in table %}
+                                {{ variable }}=self.{{ variable }},{% endfor %})
+
+    def load_message_from_file(self):
+        data = np.load(self.topic_name_dir + "/" + self.topic_name_file, allow_pickle=True)
+        self.time = data['time']{% for variable in table %}
+        self.{{ variable }} = data['{{ variable }}']{% endfor %}
+        self.k = len(self.time)
+    """
 
     interface = utilities.get_interface(package_name + "/msg/" + msg_name)
 
@@ -51,35 +71,46 @@ class Seabot2{{ class_name }}(Seabot2Data):
     if "angular" in fields.keys():
         del fields["angular"]
 
-    ## Rewrite fileds to take into acount tab and boolean
+    # Rewrite fileds to take into acount tab and boolean
     new_fields = {}
 
     for item in fields:
-        if(fields[item]=="boolean"):
-            new_fields[item]=[item, "bool"]
-        elif(fields[item]=="rcl_interfaces/ParameterValue" or fields[item]=="string"):
-            new_fields[item]=[item, "object"]
-        elif("[" in fields[item]):
+        if fields[item] == "boolean":
+            new_fields[item] = [item, "bool", item]
+        elif \
+                fields[item] == "rcl_interfaces/ParameterValue" or fields[item] == "string" or fields[
+                    item] == "sequence<uint8>" or fields[item] == "builtin_interfaces/Time":
+            new_fields[item] = [item, "object", item]
+        elif "[" in fields[item]:
             split_result = re.split(r'[\[\]]', fields[item])
             variable_type = split_result[0]
             variable_nb = int(split_result[1])
             for i in range(variable_nb):
-                new_fields[item+str(i)]=[item+"["+str(i)+"]", variable_type]
+                new_fields[item + str(i)] = [item + "[" + str(i) + "]", variable_type, item + "[" + str(i) + "]"]
         else:
-            new_fields[item]=[item, fields[item]]
+            new_fields[item] = [item, fields[item], item]
     print(new_fields)
 
+    if "time" in new_fields.keys():  # Special case for time
+        data = new_fields["time"]
+        del new_fields["time"]
+        new_fields["time_gnss"] = [data[0], data[1], "time"]
+    if "file" in new_fields.keys():  # Special case for file
+        data = new_fields["file"]
+        del new_fields["file"]
+        new_fields["file_name"] = [data[0], data[1], "file"]
 
     tm = Template(template_msg)
     msg = tm.render(class_name=interface_name, table=new_fields)
 
-    file_name = "../msg/seabot2_"+interface_name_lower + ".py"
+    file_name = "../msg/seabot2_" + interface_name_lower + ".py"
 
-    file_object  = open(file_name, "w+")
+    file_object = open(file_name, "w+")
     file_object.write(msg)
     # print("Generate " + file_name)
 
-    print("from .msg.seabot2_"+interface_name_lower+" import "+"Seabot2"+interface_name)
+    print("from .msg.seabot2_" + interface_name_lower + " import " + "Seabot2" + interface_name)
+
 
 if __name__ == '__main__':
     generate_interface_bag_file(sys.argv[1], sys.argv[2])
