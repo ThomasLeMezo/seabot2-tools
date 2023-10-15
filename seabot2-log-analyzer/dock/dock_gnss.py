@@ -35,12 +35,15 @@ class DockGnss(Seabot2Dock):
         depth = f_kalman(data_gnss.time)
 
         # find sink where mission depth go from zero to any other value
-        depth_diff = np.diff(depth > 0.3)
-        mask_sink = depth_diff > 0
-        mask_surface = depth_diff < 0
+        mode_diff = np.diff(data_gnss.mode)
+        mask_transition_mode = (mode_diff > 0 & (data_gnss.mode[:-1] == 3)) | (mode_diff < 0 & (data_gnss.mode[1:] == 0))
 
-        mask_sink = np.convolve(mask_sink, np.full(60, True), 'same')
-        mask_surface = np.convolve(mask_surface, np.full(1500, True), 'same')
+        depth_diff = np.diff(depth > 0.3)
+        mask_transition_depth = (depth_diff > 0)
+
+        convolve_mode = np.convolve(mask_transition_mode, np.full(200, True), 'same')
+        convolve_depth = np.convolve(mask_transition_depth, np.full(1500, True), 'same')
+        mask_transition_c = (convolve_mode & convolve_depth)
 
         import gpxpy.gpx
         gpx = gpxpy.gpx.GPX()
@@ -54,14 +57,13 @@ class DockGnss(Seabot2Dock):
         if filepath[0] == '':
             return
 
-        export_condition = (data_gnss.mode[:-1] > 2) & (mask_sink | mask_surface) & (depth[:-1] < 0.3)
+        export_condition = (data_gnss.mode[:-1] > 2) & mask_transition_c & (depth[:-1] < 0.3)
 
         for i in range(len(export_condition)):
             if export_condition[i]:
                 if not is_fix_mode:
                     gpx_segments.append(gpxpy.gpx.GPXTrackSegment())
                     is_fix_mode = True
-                    print("new segment")
 
                 gpx_segments[-1].points.append(gpxpy.gpx.GPXTrackPoint(latitude=data_gnss.latitude[i],
                                                                        longitude=data_gnss.longitude[i],
