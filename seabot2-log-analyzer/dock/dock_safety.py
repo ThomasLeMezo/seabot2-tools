@@ -18,6 +18,8 @@ class DockSafety(Seabot2Dock):
         self.add_cpu_ram()
         self.add_limit_depth()
 
+        print("DockSafety initialized")
+
     def add_global_safety(self):
         dock_kalman_state = Dock("Global Safety")
         self.addDock(dock_kalman_state, position='below')

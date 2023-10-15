@@ -22,6 +22,8 @@ class DockSimulation(Seabot2Dock):
             self.add_motor()
             self.add_volumes()
 
+            print("DockSimulation initialized")
+
     def add_physics(self):
         dock_physics = Dock("Pyhsics")
         self.addDock(dock_physics, position='below')

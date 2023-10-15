@@ -26,20 +26,20 @@ class DockAnalysis(Seabot2Dock):
         tabWidget.addTab(self, "Analysis")
 
         self.add_temperature_depth()
-        self.add_temperature_profile()
-        self.add_piston_depth()
+        # self.add_temperature_profile()
+        # self.add_piston_depth()
         self.add_piston()
         self.add_temperature_keeping()
 
         self.first_time_replay = True
 
-        if (
-                not self.s2b.piston_state.is_empty() and not self.s2b.fusion_sensor_external.is_empty() and not self.s2b.density.is_empty()):
+        if not self.s2b.piston_state.is_empty() and not self.s2b.fusion_sensor_external.is_empty() and not self.s2b.density.is_empty():
             self.spins = {}
             self.sk = Seabot2ReplayKalman(self.s2b.piston_state, self.s2b.fusion_sensor_external, self.s2b.density)
             self.add_replay_kalman()
 
         self.load_default_yaml()
+        print("DockAnalysis initialized")
 
     def add_temperature_depth(self):
 

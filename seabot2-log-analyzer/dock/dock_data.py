@@ -24,6 +24,8 @@ class DockData(Seabot2Dock):
         self.add_current()
         self.add_temperature()
 
+        print("DockData initialized")
+
     def add_internal_pressure(self):
         dock_internal_sensor = Dock("Internal Pressure")
         self.addDock(dock_internal_sensor, position='below')

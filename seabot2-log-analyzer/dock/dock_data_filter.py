@@ -21,6 +21,8 @@ class DockDataFilter(Seabot2Dock):
         self.add_sound_speed()
         self.add_temperature()
 
+        print("DockDataFilter initialized")
+
     def add_internal_sensor(self):
         dock_internal_sensor = Dock("Internal Sensor")
         self.addDock(dock_internal_sensor, position='below')

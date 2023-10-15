@@ -22,6 +22,8 @@ class DockPing1D(Seabot2Dock):
         self.add_data()
         self.add_bathy()
 
+        print("DockPing1D initialized")
+
     def add_altitude(self):
         dock_altitude = Dock("Altitude")
         self.addDock(dock_altitude, position='below')

@@ -16,14 +16,12 @@ class DockDepthControl(Seabot2Dock):
         tabWidget.addTab(self, "Depth Control")
 
         self.regulation_state = {
-            0: "Idle",
-            1: "Surface",
-            2: "Sink",
-            3: "Control",
-            4: "Stationary",
-            5: "Emergency",
-            6: "Piston issue",
-            7: "Hold depth"
+            0: "SURFACE",
+            1: "SINK",
+            2: "CONTROL",
+            3: "PISTON_ISSUE",
+            4: "HOLD_DEPTH",
+            5: "COMPUTE_ALPHA"
         }
 
         self.add_depth()
@@ -36,6 +34,8 @@ class DockDepthControl(Seabot2Dock):
         self.add_alpha2()
 
         dock_control.raiseDock()
+
+        print("DockDepthControl initialized")
 
     def plot_regulation_state(self, data_control):
         pg_regulation_state = pg.PlotWidget()

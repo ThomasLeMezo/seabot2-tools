@@ -22,6 +22,8 @@ class DockKalman(Seabot2Dock):
         self.add_offset_total()
         #self.add_compressibility()
 
+        print("DockKalman initialized")
+
     def add_depth(self):
         dock_kalman_state = Dock("Velocity")
         self.addDock(dock_kalman_state, position='below')

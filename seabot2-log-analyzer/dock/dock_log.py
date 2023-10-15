@@ -1,17 +1,12 @@
 #!/bin/python3
 
-import sys
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtWidgets
-import pyqtgraph.console
 from pyqtgraph.dockarea import *
 from .seabot2_dock import Seabot2Dock
 import numpy as np
-from scipy import signal, interpolate
 
 from pyqtgraph.Qt import QtWidgets
-from pyqtgraph.Qt.QtGui import QBrush
-from pyqtgraph.Qt.QtGui import QColor 
+from pyqtgraph.Qt.QtGui import QColor
 
 
 class DockLog(Seabot2Dock):
@@ -22,29 +17,32 @@ class DockLog(Seabot2Dock):
         self.add_ros_out()
         self.add_parameters()
 
+        print("DockLog initialized")
+
     def get_val(self, param):
         t = param.type
-        if(t==1):
+        if t == 1:
             return str(param.bool_value)
-        elif(t==2):
+        elif t == 2:
             return str(param.integer_value)
-        elif(t==3):
+        elif t == 3:
             return str(param.double_value)
-        elif(t==4):
+        elif t == 4:
             return str(param.string_value)
-        elif(t==5):
-            return param.byte_array_value
-        elif(t==6):
-            return param.bool_array_value
-        elif(t==7):
-            return param.integer_array_value
-        elif(t==8):
-            return param.double_array_value
-        elif(t==9):
-            s = ""
-            for w in param.string_array_value:
-                s += (w+'\n')
-            return s
+        elif t == 5:
+            return np.array2string(np.array(param.byte_array_value))
+        elif t == 6:
+            return np.array2string(np.array(param.bool_array_value))
+        elif t == 7:
+            return np.array2string(np.array(param.integer_array_value))
+        elif t == 8:
+            return np.array2string(np.array(param.double_array_value))
+        elif t == 9:
+            # s = ""
+            # for w in param.string_array_value:
+            #     s += (w+'\n')
+            # return s
+            return np.array2string(np.array(param.string_array_value))
 
     def add_ros_out(self):
         dock_rosout = Dock("Rosout")
@@ -54,7 +52,7 @@ class DockLog(Seabot2Dock):
         data_fusion = self.s2b.fusion_sensor_external
         data_mission = self.get_mission_waypoints()
 
-        if(not data.is_empty()):
+        if (not data.is_empty()):
 
             pg_depth = self.get_pg_depth(data_fusion, data_mission)
             dock_rosout.addWidget(pg_depth)
@@ -62,7 +60,7 @@ class DockLog(Seabot2Dock):
             pg_rosout = pg.TreeWidget()
             pg_rosout.setColumnCount(6)
             pg_rosout.setHeaderLabels(["time", "level", "name", "msg", "function", "file", "line"])
-            
+
             for i in range(len(data.level)):
                 item = QtWidgets.QTreeWidgetItem([str(round(data.time[i], 3))])
                 item.setText(1, str(data.level[i]))
@@ -71,7 +69,7 @@ class DockLog(Seabot2Dock):
                 item.setText(4, data.function[i])
                 item.setText(5, data.file_name[i])
                 item.setText(6, str(data.line[i]))
-                if(data.level[i]>=30):
+                if (data.level[i] >= 30):
                     for j in range(6):
                         item.setForeground(j, QColor('red'))
                 pg_rosout.addTopLevelItem(item)
@@ -87,7 +85,7 @@ class DockLog(Seabot2Dock):
 
         data = self.s2b.log_parameter
 
-        if(not data.is_empty()):
+        if (not data.is_empty()):
             pg_param = pg.TreeWidget()
             pg_param.setColumnCount(2)
             pg_param.setHeaderLabels(["Parameter", "Value"])
@@ -100,10 +98,10 @@ class DockLog(Seabot2Dock):
                     pg_param.addTopLevelItem(table_node[node_name])
 
             # ToDo : correction
-            # for i in range(len(data.value)):
-            #     item = QtWidgets.QTreeWidgetItem([data.param_name[i]])
-            #     item.setText(1, self.get_val(data.value[i]))
-            #     table_node[data.node_name[i]].addChild(item)
+            for i in range(len(data.value)):
+                item = QtWidgets.QTreeWidgetItem([data.param_name[i]])
+                item.setText(1, self.get_val(data.value[i]))
+                table_node[data.node_name[i]].addChild(item)
 
             for i in range(2):
                 pg_param.resizeColumnToContents(i)
