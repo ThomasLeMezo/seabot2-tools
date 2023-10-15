@@ -25,6 +25,7 @@ from msg.seabot2_mission_state import Seabot2MissionState
 from msg.seabot2_depth_control_set_point import Seabot2DepthControlSetPoint
 
 import datetime
+import numpy as np
 
 class Seabot2Bag():
 	def __init__(self, bag_path="", offset_date=datetime.datetime(2019, 1, 1, 0, 0)):
@@ -73,4 +74,12 @@ class Seabot2Bag():
 
 		# Simulation
 		self.simulation_debug = Seabot2SimulationDebug(bag_path, "/simulation/debug", offset_date)
+
+		# Get seabot2 name
+		self.seabot_id = ""
+		idx = np.where(self.log_parameter.param_name == "/hostname")
+		if len(idx) > 0:
+			if len(self.log_parameter.value[idx[0]]) > 0:
+				self.seabot_id = str(self.log_parameter.value[idx[0]][0].string_value)
+		print("Seabot id: " + self.seabot_id)
 		

@@ -97,7 +97,6 @@ class DockLog(Seabot2Dock):
                     table_node[node_name] = QtWidgets.QTreeWidgetItem([node_name])
                     pg_param.addTopLevelItem(table_node[node_name])
 
-            # ToDo : correction
             for i in range(len(data.value)):
                 item = QtWidgets.QTreeWidgetItem([data.param_name[i]])
                 item.setText(1, self.get_val(data.value[i]))

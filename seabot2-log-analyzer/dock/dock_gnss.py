@@ -29,22 +29,18 @@ class DockGnss(Seabot2Dock):
     def save_gps_at_sink_and_surface(self):
         data_gnss = self.s2b.gps_fix
         data_kalman = self.s2b.kalman
-        data_mission = self.get_mission_waypoints()
 
         # interpolate depth data to gnss data
         f_kalman = interpolate.interp1d(data_kalman.time, data_kalman.depth, bounds_error=False, kind="zero")
         depth = f_kalman(data_gnss.time)
-        # interpolate mission data to gnss data
-        f_mission = interpolate.interp1d(data_mission.time, data_mission.depth, bounds_error=False, kind="zero")
-        depth_mission = f_mission(data_gnss.time)
 
         # find sink where mission depth go from zero to any other value
-        depth_mission_diff = np.diff(depth_mission)
-        mask_sink = (depth_mission_diff > 0) & (depth_mission[:-1] == 0)
-        mask_surface = (depth_mission_diff < 0) & (depth_mission[1:] == 0)  # shift to take into account diff operation
+        depth_diff = np.diff(depth > 0.3)
+        mask_sink = depth_diff > 0
+        mask_surface = depth_diff < 0
 
         mask_sink = np.convolve(mask_sink, np.full(60, True), 'same')
-        mask_surface = np.convolve(mask_surface, np.full(1000, True), 'same')
+        mask_surface = np.convolve(mask_surface, np.full(1500, True), 'same')
 
         import gpxpy.gpx
         gpx = gpxpy.gpx.GPX()
@@ -53,7 +49,7 @@ class DockGnss(Seabot2Dock):
         gpx_track = gpxpy.gpx.GPXTrack()
         gpx_segments = []
 
-        filepath = QFileDialog.getSaveFileName(self.win, "Save file", str(data_gnss.bag_path) + "_sink_surface"+ ".gpx", "GPX (*.gpx)")
+        filepath = QFileDialog.getSaveFileName(self.win, "Save file", str(data_gnss.bag_path) + "_" + self.s2b.seabot_id + "_sink_surface"+ ".gpx", "GPX (*.gpx)")
         print(filepath)
         if filepath[0] == '':
             return
@@ -84,8 +80,6 @@ class DockGnss(Seabot2Dock):
             gpx_track.segments.append(seg)
         gpx.tracks.append(gpx_track)
 
-        print(gpx_track)
-
         file = open(filepath[0], "w")
         file.write(gpx.to_xml())
         file.close()
@@ -98,7 +92,7 @@ class DockGnss(Seabot2Dock):
         data_kalman = self.s2b.kalman
 
         # interpolate depth data to gps data
-        f = interpolate.interp1d(data_kalman.time, data_kalman.depth)
+        f = interpolate.interp1d(data_kalman.time, data_kalman.depth, bounds_error=False, kind="zero")
         depth = f(data_gnss.time)
 
         gpx = gpxpy.gpx.GPX()
@@ -107,7 +101,8 @@ class DockGnss(Seabot2Dock):
         gpx_track = gpxpy.gpx.GPXTrack()
         gpx_segments = []
 
-        filepath = QFileDialog.getSaveFileName(self.win, "Save file", str(data_gnss.bag_path) + ".gpx", "GPX (*.gpx)")
+        print(self.s2b.seabot_id)
+        filepath = QFileDialog.getSaveFileName(self.win, "Save file", str(data_gnss.bag_path) + "_" + self.s2b.seabot_id + ".gpx", "GPX (*.gpx)")
         print(filepath)
         if filepath[0] == '':
             return

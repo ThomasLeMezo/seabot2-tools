@@ -45,6 +45,7 @@ class Seabot2{{ class_name }}(Seabot2Data):
         if not os.path.exists(self.topic_name_dir) and self.k > 0:
             os.makedirs(self.topic_name_dir)
             # Save data (compressed)
+        if not os.path.exists(self.topic_full_dir):
             np.savez_compressed(self.topic_full_dir,
                                 time=self.time,{% for variable in table %}
                                 {{ variable }}=self.{{ variable }},{% endfor %})

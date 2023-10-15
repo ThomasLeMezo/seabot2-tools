@@ -69,6 +69,9 @@ class Seabot2Data(object):
     def load_message_from_file(self):
         print("load_message_from_file not implemented")
 
+    def save_data(self):
+        print("save_data not implemented")
+
     def load_message(self):
 
         # test if data directory exists (data has been already saved)

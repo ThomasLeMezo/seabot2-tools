@@ -40,7 +40,7 @@ s2b = Seabot2Bag(filename, offset_date)
 app = QtWidgets.QApplication([])
 win = QtWidgets.QMainWindow()
 win.showMaximized()
-win.setWindowTitle("Seabot log - " + sys.argv[1])
+win.setWindowTitle(s2b.seabot_id + " log - " + sys.argv[1])
 
 tab = QtWidgets.QTabWidget()
 win.setCentralWidget(tab)
