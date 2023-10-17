@@ -17,7 +17,8 @@ class Seabot2Twist(Seabot2Data):
         self.load_message()
         self.resize_data_array()
         super().resize_data_array()
-        self.save_data()
+        if self.k>0:
+            self.save_data()
 
     def process_message(self, msg):
         
