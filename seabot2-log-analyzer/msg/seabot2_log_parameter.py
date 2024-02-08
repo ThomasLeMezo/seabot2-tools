@@ -20,7 +20,7 @@ class Seabot2LogParameter(Seabot2Data):
         self.load_message()
         self.resize_data_array()
         super().resize_data_array()
-        if self.k>0:
+        if self.k > 0 and not self.was_loaded_from_file:
             self.save_data()
 
     def process_message(self, msg):

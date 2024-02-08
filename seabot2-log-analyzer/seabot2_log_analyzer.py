@@ -17,6 +17,7 @@ from dock.dock_safety import DockSafety
 from dock.dock_ping1D import DockPing1D
 from dock.dock_gnss import DockGnss
 from dock.dock_simulation import DockSimulation
+from dock.dock_imu import DockImu
 
 import datetime
 
@@ -47,6 +48,7 @@ win.setCentralWidget(tab)
 
 ## Data
 dock_data = DockData(s2b, tab)
+dock_imu = DockImu(s2b, tab)
 dock_data_filter = DockDataFilter(s2b, tab)
 dock_kalman = DockKalman(s2b, tab)
 dock_depth_control = DockDepthControl(s2b, tab)

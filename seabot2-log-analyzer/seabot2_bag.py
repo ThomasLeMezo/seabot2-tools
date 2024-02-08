@@ -23,6 +23,9 @@ from msg.seabot2_alpha_debug import Seabot2AlphaDebug
 from msg.seabot2_simulation_debug import Seabot2SimulationDebug
 from msg.seabot2_mission_state import Seabot2MissionState
 from msg.seabot2_depth_control_set_point import Seabot2DepthControlSetPoint
+from msg.seabot2_raw_data import Seabot2RawData
+from msg.seabot2_r_p_y import Seabot2RPY
+from msg.seabot2_debug_fusion import Seabot2DebugFusion
 
 import datetime
 import numpy as np
@@ -50,6 +53,11 @@ class Seabot2Bag():
 
 		self.profile = Seabot2Profile(bag_path, "/driver/profile", offset_date)
 		self.temperature = Seabot2TemperatureSensorData(bag_path, "/driver/temperature", offset_date)
+
+		self.imu_raw_data = Seabot2RawData(bag_path, "/driver/raw_data", offset_date)
+		self.imu_calibrated_data = Seabot2RawData(bag_path, "/driver/calibrated_data", offset_date)
+		self.imu_rpy = Seabot2RPY(bag_path, "/driver/rpy", offset_date)
+		self.imu_fusion_debug = Seabot2DebugFusion(bag_path, "/driver/debug_fusion", offset_date)
 
 		# Mission
 		self.waypoint = Seabot2Waypoint(bag_path, "/mission/waypoint", offset_date)

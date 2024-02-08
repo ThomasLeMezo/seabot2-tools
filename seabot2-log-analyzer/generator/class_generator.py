@@ -27,7 +27,7 @@ class Seabot2{{ class_name }}(Seabot2Data):
         self.load_message()
         self.resize_data_array()
         super().resize_data_array()
-        if self.k>0:
+        if self.k > 0 and not self.was_loaded_from_file:
             self.save_data()
 
     def process_message(self, msg):
@@ -87,8 +87,18 @@ class Seabot2{{ class_name }}(Seabot2Data):
             split_result = re.split(r'[\[\]]', fields[item])
             variable_type = split_result[0]
             variable_nb = int(split_result[1])
-            for i in range(variable_nb):
-                new_fields[item + str(i)] = [item + "[" + str(i) + "]", variable_type, item + "[" + str(i) + "]"]
+            if variable_nb < 10:
+                for i in range(variable_nb):
+                    new_fields[item + str(i)] = [item + "[" + str(i) + "]", variable_type, item + "[" + str(i) + "]"]
+            else:
+                if variable_type == "uint8":
+                    new_fields[item] = [item, "ubyte", item]
+                else:
+                    new_fields[item] = [item, "object", item]
+        elif fields[item] == "geometry_msgs/Vector3":
+            new_fields[item + "_x"] = [item + "_x", "float", item + ".x"]
+            new_fields[item + "_y"] = [item + "_x", "float", item + ".y"]
+            new_fields[item + "_z"] = [item + "_x", "float", item + ".z"]
         else:
             new_fields[item] = [item, fields[item], item]
     print(new_fields)

@@ -20,6 +20,9 @@ generate_interface_bag_file("temperature_tsys01_driver", "TemperatureSensorData"
 generate_interface_bag_file("seabot2_density", "Density")
 generate_interface_bag_file("seabot2_log_parameters", "LogParameter")
 generate_interface_bag_file("bluerobotics_ping_driver", "Profile")
+generate_interface_bag_file("icm20948_driver", "RawData")
+generate_interface_bag_file("icm20948_driver", "DebugFusion")
+generate_interface_bag_file("icm20948_driver", "RPY")
 
 generate_interface_bag_file("seabot2_mission", "MissionState")
 generate_interface_bag_file("seabot2_mission", "DepthControlSetPoint")

@@ -159,6 +159,12 @@ class DockData(Seabot2Dock):
             pg_piston_current.setLabel('left', "A")
             dock_piston_power.addWidget(pg_piston_current)
 
+            pg_piston_enable = pg.PlotWidget()
+            self.set_plot_options(pg_piston_enable)
+            pg_piston_enable.plot(data.time, data.enable[:-1], pen=(0,255,0), name="Enable", stepMode=True)
+            dock_piston_power.addWidget(pg_piston_enable)
+
+
             pg_piston_batt_voltage.setXLink(pg_piston)
             pg_piston_current.setXLink(pg_piston)
 
