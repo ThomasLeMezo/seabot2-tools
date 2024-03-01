@@ -90,4 +90,7 @@ class Seabot2Bag():
 			if len(self.log_parameter.value[idx[0]]) > 0:
 				self.seabot_id = str(self.log_parameter.value[idx[0]][0].string_value)
 		print("Seabot id: " + self.seabot_id)
+
+		# Export starting time of rosbag
+		self.rosout.export_starting_time()
 		

@@ -40,6 +40,18 @@ class Seabot2Data(object):
             self.topic_name_dir += self.topic_name.rsplit('/', 1)[0]
         self.topic_name_file = self.topic_name.rsplit('/', 1)[-1] + ".npz"
         self.topic_full_dir = self.topic_name_dir + "/" + self.topic_name_file
+        self.topic_starting_time = self.topic_name_dir + "/starting_time.txt"
+
+    def export_starting_time(self):
+        import os
+        # Test if save directory exists
+        if not os.path.exists(self.topic_name_dir):
+            os.makedirs(self.topic_name_dir)
+            # Save data (compressed)
+        if not os.path.exists(self.topic_starting_time):
+            with open(self.topic_starting_time, 'w') as f:
+                f.write(str(self.starting_time))
+                print("starting_time saved in ", self.topic_starting_time)
 
     def is_empty(self):
         if (self.k == 0):
