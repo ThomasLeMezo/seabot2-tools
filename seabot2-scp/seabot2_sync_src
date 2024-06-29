@@ -2,4 +2,4 @@
 
 SEABOT=$1
 echo "Sync with seabot"$SEABOT
-rsync $HOME/seabot2/seabot2-ros/src pi@192.168.0.10"$SEABOT":seabot2-ros -r
+rsync -r $HOME/seabot2/seabot2-ros/.arm64/install pi@192.168.0.10"$SEABOT":seabot2-ros/ -r

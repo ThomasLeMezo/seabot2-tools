@@ -57,6 +57,7 @@ class DockDepthControl(Seabot2Dock):
         data_mission = self.get_mission_waypoints()
         data_alpha = self.s2b.alpha_debug
         data_simulation = self.s2b.simulation_debug
+        data_simulation_thermocline = self.s2b.simulation_thermocline
 
         if not data.is_empty() and not data_mission.is_empty():
             pg_depth = self.get_pg_depth(data, data_kalman, "depth (filter)", "depth (kalman)")
@@ -93,9 +94,14 @@ class DockDepthControl(Seabot2Dock):
 
             pg_velocity.plot(data.time, dz[:-1], pen=(0, 0, 255), name="velocity_target", stepMode=True)
 
-            if (not data_simulation.is_empty()):
+            if not data_simulation.is_empty():
                 pg_depth.plot(data_simulation.time, data_simulation.z[:-1], pen=(255, 0, 255), name="depth [simu]",
                               stepMode=True)
+                pg_velocity.plot(data_simulation.time, data_simulation.dz[:-1], pen=(255, 255, 255), name="velocity [simu]",
+                                 stepMode=True)
+            if not data_simulation_thermocline.is_empty():
+                pg_depth.plot(data_simulation_thermocline.time, data_simulation_thermocline.thermocline_depth[:-1], pen=(0, 255, 255),
+                              name="thermocline depth [simu]", stepMode=True)
         return dock_depth
 
     def add_depth_acc(self):

@@ -26,6 +26,7 @@ from msg.seabot2_depth_control_set_point import Seabot2DepthControlSetPoint
 from msg.seabot2_raw_data import Seabot2RawData
 from msg.seabot2_r_p_y import Seabot2RPY
 from msg.seabot2_debug_fusion import Seabot2DebugFusion
+from msg.seabot2_simulation_thermocline import Seabot2SimulationThermocline
 
 import datetime
 import numpy as np
@@ -82,6 +83,7 @@ class Seabot2Bag():
 
 		# Simulation
 		self.simulation_debug = Seabot2SimulationDebug(bag_path, "/simulation/debug", offset_date)
+		self.simulation_thermocline = Seabot2SimulationThermocline(bag_path, "/simulation/thermocline", offset_date)
 
 		# Get seabot2 name
 		self.seabot_id = ""

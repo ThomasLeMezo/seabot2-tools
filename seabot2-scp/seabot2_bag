@@ -27,4 +27,4 @@ fi
 FILE=($FILES[$USERINPUT])
 echo "Download " $FILE " from Seabot" $SEABOT 
 
-scp -r $USER@$IP$SEABOT:~/log/$FILE $DIRECTORY
+rsync -r -C $USER@$IP$SEABOT:~/log/$FILE $DIRECTORY
