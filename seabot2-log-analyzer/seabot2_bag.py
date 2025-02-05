@@ -1,6 +1,5 @@
 #!/bin/python3
 
-from msg.seabot2_waypoint import Seabot2Waypoint
 from msg.seabot2_safety_status import Seabot2SafetyStatus
 from msg.seabot2_gnss_pose import Seabot2GnssPose
 from msg.seabot2_depth_pose import Seabot2DepthPose
@@ -27,6 +26,8 @@ from msg.seabot2_raw_data import Seabot2RawData
 from msg.seabot2_r_p_y import Seabot2RPY
 from msg.seabot2_debug_fusion import Seabot2DebugFusion
 from msg.seabot2_simulation_thermocline import Seabot2SimulationThermocline
+from msg.seabot2_waypoint import Seabot2Waypoint
+from msg.seabot2_safety_status2 import Seabot2SafetyStatus2
 
 import datetime
 import numpy as np
@@ -75,7 +76,11 @@ class Seabot2Bag():
 		self.density = Seabot2Density(bag_path, "/observer/density", offset_date)
 		self.fusion_temperature = Seabot2TemperatureSensorData(bag_path, "/observer/temperature", offset_date)
 
+		# Safety
+		# ToDo : change to SafetyStatus2 if date > 2025
 		self.safety = Seabot2SafetyStatus(bag_path, "/safety/safety", offset_date)
+
+		# Audio
 
 		# Info
 		self.rosout = Seabot2Log(bag_path, "/rosout", offset_date)

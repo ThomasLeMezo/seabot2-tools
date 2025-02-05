@@ -59,7 +59,9 @@ class DockDepthControl(Seabot2Dock):
         data_simulation = self.s2b.simulation_debug
         data_simulation_thermocline = self.s2b.simulation_thermocline
 
-        if not data.is_empty() and not data_mission.is_empty():
+        if (not data.is_empty()
+                and not data_mission.is_empty()
+                and not data_alpha.is_empty()):
             pg_depth = self.get_pg_depth(data, data_kalman, "depth (filter)", "depth (kalman)")
             pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0, 0, 255), name="depth [target]",
                           stepMode=True)
@@ -112,7 +114,9 @@ class DockDepthControl(Seabot2Dock):
         data_mission = self.get_mission_waypoints()
         data_alpha = self.s2b.alpha_debug
 
-        if (not data.is_empty() and not data_mission.is_empty()):
+        if (not data.is_empty()
+                and not data_mission.is_empty()
+                and not data_alpha.is_empty()):
             pg_velocity = pg.PlotWidget()
             self.set_plot_options(pg_velocity)
             pg_velocity.plot(data.time, data.velocity[:-1], pen=(255, 0, 0), name="velocity [filter]", stepMode=True)
@@ -278,7 +282,9 @@ class DockDepthControl(Seabot2Dock):
         data_mission = self.get_mission_waypoints()
         data_alpha = self.s2b.alpha_debug
 
-        if (not data.is_empty() and not data_mission.is_empty()):
+        if (not data.is_empty()
+                and not data_mission.is_empty()
+                and not data_alpha.is_empty()):
             pg_depth = self.get_pg_depth(data, data_kalman, "depth (filter)", "depth (kalman)")
             pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0, 0, 255), name="depth [target]",
                           stepMode=True)
@@ -329,7 +335,9 @@ class DockDepthControl(Seabot2Dock):
         data_alpha = self.s2b.alpha_debug
         data_control = self.s2b.depth_control_debug
 
-        if (not data.is_empty() and not data_mission.is_empty()):
+        if (not data.is_empty()
+                and not data_mission.is_empty()
+                and not data_alpha.is_empty()):
             pg_depth = self.get_pg_depth(data, data_kalman, "depth (filter)", "depth (kalman)")
             pg_depth.plot(data_mission.time, data_mission.depth[:-1], pen=(0, 0, 255), name="depth [target]",
                           stepMode=True)

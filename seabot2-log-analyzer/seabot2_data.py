@@ -72,7 +72,11 @@ class Seabot2Data(object):
             return 0
 
     def get_starting_time(self):
-        return rosbag2_py.Info().read_metadata(self.storage_options.uri, self.storage_options.storage_id).starting_time
+        st = rosbag2_py.Info().read_metadata(self.storage_options.uri, self.storage_options.storage_id).starting_time
+        # test if st is a datetime
+
+        dt = datetime.datetime.fromtimestamp(st.nanoseconds*1e-9)
+        return dt
 
     def process_message(self, msg):
         print("process_message not implemented")

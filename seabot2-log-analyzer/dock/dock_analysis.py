@@ -89,19 +89,19 @@ class DockAnalysis(Seabot2Dock):
                 self.timer_td = pg.QtCore.QTimer()
                 self.timer_td.timeout.connect(self.update_plot_td)
                 self.timer_td.start(50)
-                self.scrolling_button_td = QtGui.QPushButton('Scrolling')
+                self.scrolling_button_td = QtWidgets.QPushButton('Scrolling')
                 self.scrolling_button_td.setCheckable(True)
                 dock_temperature_depth.addWidget(self.scrolling_button_td, row=3, col=0)
                 self.scrolling_t = 0
 
-                self.scrolling_velocity = QtGui.QSpinBox()
+                self.scrolling_velocity = QtWidgets.QSpinBox()
                 self.scrolling_velocity.setRange(0, 10000)
                 self.scrolling_velocity.setSingleStep(10)
                 self.scrolling_velocity.setValue(10)
                 dock_temperature_depth.addWidget(self.scrolling_velocity, row=4, col=0)
 
                 # Export temperature with a button and choose the directory
-                self.button_export_temperature = QtGui.QPushButton('Export temperature')
+                self.button_export_temperature = QtWidgets.QPushButton('Export temperature')
                 self.button_export_temperature.clicked.connect(self.export_temperature)
                 dock_temperature_depth.addWidget(self.button_export_temperature, row=5, col=0)
 
@@ -254,7 +254,7 @@ class DockAnalysis(Seabot2Dock):
             pg_velocity.setXLink(pg_depth)
 
             # Export data
-            self.button_export_data_keeping = QtGui.QPushButton('Export data')
+            self.button_export_data_keeping = QtWidgets.QPushButton('Export data')
             self.button_export_data_keeping.clicked.connect(self.export_data_keeping)
             dock_temperature_profile.addWidget(self.button_export_data_keeping, row=5, col=0)
 

@@ -150,11 +150,11 @@ class DockGnss(Seabot2Dock):
 
             dock_position.addWidget(pg_position)
 
-            saveBtn = QtGui.QPushButton('Export GPX')
+            saveBtn = QtWidgets.QPushButton('Export GPX')
             saveBtn.clicked.connect(self.save_gpx)
             dock_position.addWidget(saveBtn, row=1, col=0)
 
-            saveBtn2 = QtGui.QPushButton('Export GPX at sink and surface')
+            saveBtn2 = QtWidgets.QPushButton('Export GPX at sink and surface')
             saveBtn2.clicked.connect(self.save_gps_at_sink_and_surface)
             dock_position.addWidget(saveBtn2, row=2, col=0)
 
