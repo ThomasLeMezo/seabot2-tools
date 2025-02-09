@@ -98,63 +98,87 @@ class DockPing1D(Seabot2Dock):
             pg_data_length.setXLink(pg_scan_start)
 
     def add_data(self):
-        dock_profile = Dock("Data")
+        dock_profile = Dock("Data (down sampling)")
         self.addDock(dock_profile, position='below')
         data_profile = self.s2b.profile
         data_kalman = self.s2b.kalman
 
-        if(not data_profile.is_empty() and not data_kalman.is_empty()):
-            downsampling = 10
-            xn = np.size(data_profile.time[0:data_profile.nb_elements:downsampling])
-            yn = data_profile.profile_data_length[0]
-
+        if not data_profile.is_empty() and not data_kalman.is_empty():
             f_depth = interpolate.interp1d(data_kalman.time, data_kalman.depth, bounds_error=False, kind="zero")
-            depth_i = f_depth(data_profile.time[0:data_profile.nb_elements:downsampling])
-
-            x = np.repeat(data_profile.time[0:data_profile.nb_elements:downsampling], yn).reshape((xn, yn))
-
-            y = np.zeros((xn, yn))
-
-            z = np.zeros((xn, yn))
-
-            for i in range(0, xn):
-                scan_length = data_profile.scan_length[i*downsampling]
-                scan_start = data_profile.scan_start[i*downsampling]
-                if not np.isnan(depth_i[i]):
-                    scan_start = scan_start + depth_i[i]*1e3
-                try:
-                    y[i, :] = np.linspace(scan_start, scan_length+scan_start, yn)
-                    z[i, :] =  (data_profile.profile_data[i*downsampling][0:yn])
-                except Exception as e:
-                    print("Oops!  error ", e)
-                    pass
 
             ## Create image item
-            edgecolors   = None
-            antialiasing = True
-            # edgecolors = {'color':'w', 'width':2} # May be uncommened to see edgecolor effect
-            # antialiasing = True # May be uncommened to see antialiasing effect
+            edgecolors   = None # edgecolors = {'color':'w', 'width':2} # May be uncommened to see edgecolor effect
+            antialiasing = True # antialiasing = True # May be uncommened to see antialiasing effect
+
             pcmi = pg.PColorMeshItem(edgecolors=edgecolors, antialiasing=antialiasing)
 
-            pcmi.setData(x,y,z[:-1,:-1])
+            def update_data(t_start=0, t_end=max(data_profile.time), max_samples=1000):
+                # Find the index of the time
+                idx_start = np.where(data_profile.time >= t_start)[0][0]
+                idx_end = np.where(data_profile.time >= t_end)[0][0]
+                down_sampling = max(1, int((idx_end-idx_start)/max_samples))
 
+                xn = np.size(data_profile.time[idx_start:idx_end:down_sampling])
+                yn = data_profile.profile_data_length[0]
+                depth_i = f_depth(data_profile.time[idx_start:idx_end:down_sampling])
+
+                x = np.repeat(data_profile.time[idx_start:idx_end:down_sampling], yn).reshape((xn, yn))
+                y = np.zeros((xn, yn))
+                z = np.zeros((xn, yn))
+
+                for i in range(0, xn):
+                    scan_length = data_profile.scan_length[i*down_sampling+idx_start]
+                    scan_start = data_profile.scan_start[i*down_sampling+idx_start]
+                    if not np.isnan(depth_i[i]):
+                        scan_start = scan_start + depth_i[i]*1e3
+                    try:
+                        y[i, :] = np.linspace(scan_start, scan_length+scan_start, yn)
+                        z[i, :] =  (data_profile.profile_data[i*down_sampling+idx_start][0:yn])
+                    except Exception as e:
+                        print("Oops!  error ", e)
+                        pass
+                pcmi.setData(x,y,z[:-1,:-1])
+                return down_sampling
+
+            ###
             pw = pg.PlotWidget()
+            update_data()
             pw.addItem(pcmi)
             pw.getViewBox().invertY(True)
-
             depth2_i = f_depth(data_profile.time)
             pw.plot(data_profile.time, data_profile.distance[:-1]+depth2_i[:-1]*1e3, pen=(255,0,0), name="distance", stepMode=True)
 
             dock_profile.addWidget(pw)
 
-            # with open('time.npy', 'wb') as f:
-            #     np.save(f,data_profile.time)
-            # with open('scan_start.npy', 'wb') as f:
-            #     np.save(f,data_profile.scan_start)
-            # with open('scan_length.npy', 'wb') as f:
-            #     np.save(f,data_profile.scan_length)
-            # with open('profile_data.npy', 'wb') as f:
-            #     np.save(f,data_profile.profile_data)
-            # with open('gain_setting.npy', 'wb') as f:
-            #     np.save(f,data_profile.gain_setting)
-                   
+            ### Add distance profile with aLinearRegionItem
+            pw2 = pg.PlotWidget()
+            pw2.plot(data_profile.time, data_profile.distance[:-1], pen=(255,0,0), name="distance", stepMode=True)
+            lr = pg.LinearRegionItem([0, max(data_profile.time)], bounds=[0, max(data_profile.time)])
+            lr.setZValue(-10)
+
+            ### Add a QLabel to show if minimum resolution is reached
+            label = QtWidgets.QLabel()
+            dock_profile.addWidget(label)
+            ### Add a spinbox to control the number of samples to display
+            spinbox = QtWidgets.QSpinBox()
+            spinbox.setRange(100, 10000)
+            spinbox.setValue(200)
+            spinbox.setSingleStep(100)
+            spinbox.setSuffix(" samples")
+            dock_profile.addWidget(spinbox)
+
+            def update_region():
+                 # Update the data based on the region
+                t_start, t_end = lr.getRegion()
+                down_sampling = update_data(t_start, t_end, spinbox.value())
+                label.setText(f"Down sampling: {down_sampling}")
+
+            def update_spinbox():
+                update_region()
+            # connect when end editing
+            spinbox.editingFinished.connect(update_spinbox)
+
+            lr.sigRegionChanged.connect(update_region)
+            pw2.addItem(lr)
+            pw2.setXLink(pw)
+            dock_profile.addWidget(pw2)
