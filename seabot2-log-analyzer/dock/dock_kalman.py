@@ -76,18 +76,21 @@ class DockKalman(Seabot2Dock):
         pg_offset.setLabel('left', "offset", "g")
         dock_offset.addWidget(pg_offset)
 
-        f_pressure = interpolate.interp1d(data_filter.time, data_filter.pressure, bounds_error=False, kind="zero")
-        pressure = f_pressure(data.time)
+        try:
+            f_pressure = interpolate.interp1d(data_filter.time, data_filter.pressure, bounds_error=False, kind="zero")
+            pressure = f_pressure(data.time)
 
-        f_temp = interpolate.interp1d(data_temperature.time, data_temperature.temperature, bounds_error=False, kind="zero")
-        temperature = f_temp(data.time)
+            f_temp = interpolate.interp1d(data_temperature.time, data_temperature.temperature, bounds_error=False, kind="zero")
+            temperature = f_temp(data.time)
 
-        pg_volume_air = pg.PlotWidget()
-        self.set_plot_options(pg_volume_air)
-        pg_volume_air.plot(data.time, (data.volume_air*(temperature+273.15)/((pressure+1.0)*1e5))[:-1]*1e6, pen=(0,255,0), name="volume_air", stepMode=True)
-        pg_volume_air.setLabel('left', "volume air", "g")
-        dock_offset.addWidget(pg_volume_air)
-        pg_volume_air.setXLink(pg_offset)
+            pg_volume_air = pg.PlotWidget()
+            self.set_plot_options(pg_volume_air)
+            pg_volume_air.plot(data.time, (data.volume_air*(temperature+273.15)/((pressure+1.0)*1e5))[:-1]*1e6, pen=(0,255,0), name="volume_air", stepMode=True)
+            pg_volume_air.setLabel('left', "volume air", "g")
+            dock_offset.addWidget(pg_volume_air)
+            pg_volume_air.setXLink(pg_offset)
+        except:
+            print("Error with pressure")
 
     def add_coeff2(self):
         dock_offset = Dock("Coefficient 2")
@@ -139,7 +142,7 @@ class DockKalman(Seabot2Dock):
 
             pg_variance_offset = pg.PlotWidget()
             self.set_plot_options(pg_variance_offset)
-            pg_variance_offset.plot(data.time, data.variance1[:-1], pen=(0,255,0), name="variance offset", stepMode=True)
+            pg_variance_offset.plot(data.time, data.variance2[:-1], pen=(0,255,0), name="variance offset", stepMode=True)
             pg_variance_offset.setLabel('left', "offset", "")
             pg_variance_offset.enableAutoRange('y', 0.4)
             dock_offset.addWidget(pg_variance_offset)

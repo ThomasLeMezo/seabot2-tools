@@ -32,9 +32,9 @@ class DockAnalysis(Seabot2Dock):
         self.add_temperature_keeping()
 
         self.first_time_replay = True
+        self.spins = {}
 
         if not self.s2b.piston_state.is_empty() and not self.s2b.fusion_sensor_external.is_empty() and not self.s2b.density.is_empty():
-            self.spins = {}
             self.sk = Seabot2ReplayKalman(self.s2b.piston_state, self.s2b.fusion_sensor_external, self.s2b.density)
             self.add_replay_kalman()
 

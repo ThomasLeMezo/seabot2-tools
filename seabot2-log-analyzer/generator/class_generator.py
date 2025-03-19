@@ -72,6 +72,7 @@ class Seabot2{{ class_name }}(Seabot2Data):
         del fields["linear"]
     if "angular" in fields.keys():
         del fields["angular"]
+    
 
     # Rewrite fileds to take into acount tab and boolean
     new_fields = {}
